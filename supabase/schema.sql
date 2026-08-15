@@ -25,7 +25,7 @@ create table if not exists public.items (
   unit text not null default 'pcs' check (unit in ('pcs', 'bottle', 'kg', 'g', 'L', 'ml')),
   category text not null default 'other' check (category in (
     'vegetables', 'meat', 'seafood', 'dairy_eggs', 'fats_oils',
-    'grains', 'herbs_spices', 'other'
+    'grains', 'herbs_spices', 'cleaning', 'other'
   )),
   low_stock_threshold numeric not null default 5 check (low_stock_threshold >= 0),
   updated_at timestamptz not null default now(),

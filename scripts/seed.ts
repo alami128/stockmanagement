@@ -1,6 +1,6 @@
 /**
- * Seeds demo data into Supabase: one user per role plus a starter
- * list of kitchen items.
+ * Seeds demo data into Supabase: one user per role plus the kitchen
+ * order-list starter items.
  *
  * Usage:
  *   npm run seed
@@ -44,14 +44,83 @@ const DEMO_ITEMS: {
   category: string;
   low_stock_threshold: number;
 }[] = [
-  { name: "Chicken", quantity: 12, unit: "kg", category: "meat", low_stock_threshold: 5 },
-  { name: "Tomatoes", quantity: 2, unit: "kg", category: "vegetables", low_stock_threshold: 5 },
+  // Vegetables
+  { name: "Parsley", quantity: 8, unit: "pcs", category: "vegetables", low_stock_threshold: 4 },
+  { name: "Skinny fries", quantity: 10, unit: "kg", category: "vegetables", low_stock_threshold: 5 },
+  { name: "Beetroot", quantity: 6, unit: "kg", category: "vegetables", low_stock_threshold: 3 },
+  { name: "Dill", quantity: 5, unit: "pcs", category: "vegetables", low_stock_threshold: 3 },
+
+  // Meat / Fish / Protein
+  { name: "Chicken breast", quantity: 8, unit: "kg", category: "meat", low_stock_threshold: 4 },
+  {
+    name: "Beef (for beef sandwich)",
+    quantity: 0.5,
+    unit: "kg",
+    category: "meat",
+    low_stock_threshold: 2,
+  },
+  {
+    name: "Beef Burgers (3oz)",
+    quantity: 3,
+    unit: "pcs",
+    category: "meat",
+    low_stock_threshold: 6,
+  },
+  {
+    name: "Italian sausages",
+    quantity: 4,
+    unit: "kg",
+    category: "meat",
+    low_stock_threshold: 3,
+  },
+  { name: "Chorizo", quantity: 3, unit: "kg", category: "meat", low_stock_threshold: 2 },
+
+  // Spices / Flavors
+  {
+    name: "Gochujang paste",
+    quantity: 2,
+    unit: "bottle",
+    category: "herbs_spices",
+    low_stock_threshold: 1,
+  },
+
+  // Dairy (listed under fats column on order sheet)
+  { name: "Vegan cheese", quantity: 4, unit: "pcs", category: "dairy_eggs", low_stock_threshold: 2 },
+  { name: "Parmesan", quantity: 2, unit: "kg", category: "dairy_eggs", low_stock_threshold: 1 },
   { name: "Milk", quantity: 0, unit: "bottle", category: "dairy_eggs", low_stock_threshold: 4 },
-  { name: "Rice", quantity: 20, unit: "kg", category: "grains", low_stock_threshold: 8 },
-  { name: "Onions", quantity: 15, unit: "kg", category: "vegetables", low_stock_threshold: 5 },
-  { name: "Olive Oil", quantity: 3, unit: "bottle", category: "fats_oils", low_stock_threshold: 2 },
-  { name: "Eggs", quantity: 6, unit: "pcs", category: "dairy_eggs", low_stock_threshold: 12 },
-  { name: "Butter", quantity: 1, unit: "kg", category: "fats_oils", low_stock_threshold: 2 },
+  { name: "Smoked cheese", quantity: 3, unit: "pcs", category: "dairy_eggs", low_stock_threshold: 2 },
+
+  // Starches
+  {
+    name: "Gluten free bread",
+    quantity: 6,
+    unit: "pcs",
+    category: "grains",
+    low_stock_threshold: 4,
+  },
+  {
+    name: "Plain flour",
+    quantity: 5,
+    unit: "kg",
+    category: "grains",
+    low_stock_threshold: 5,
+  },
+
+  // Cleaning products
+  {
+    name: "Hand soap (North Shore)",
+    quantity: 2,
+    unit: "bottle",
+    category: "cleaning",
+    low_stock_threshold: 2,
+  },
+  {
+    name: "Yellow sponges",
+    quantity: 8,
+    unit: "pcs",
+    category: "cleaning",
+    low_stock_threshold: 4,
+  },
 ];
 
 async function seedUsers() {
@@ -83,6 +152,7 @@ async function seedUsers() {
 }
 
 async function seedItems() {
+  let created = 0;
   for (const item of DEMO_ITEMS) {
     const { data: existing } = await supabase
       .from("items")
@@ -90,13 +160,31 @@ async function seedItems() {
       .eq("name", item.name)
       .maybeSingle();
 
-    if (existing) continue;
+    if (existing) {
+      console.log(`Skipping item ${item.name} (already exists)`);
+      continue;
+    }
 
-    const { error } = await supabase.from("items").insert(item);
-    if (error)
+    let { error } = await supabase.from("items").insert(item);
+
+    // Older DBs may not allow `cleaning` yet — fall back so items still appear.
+    if (error && item.category === "cleaning") {
+      console.warn(
+        `Category "cleaning" not allowed yet for ${item.name}; inserting as "other". Run supabase/migrations/20260815_add_cleaning_category.sql`
+      );
+      ({ error } = await supabase
+        .from("items")
+        .insert({ ...item, category: "other" }));
+    }
+
+    if (error) {
       console.error(`Failed to create item ${item.name}:`, error.message);
+    } else {
+      created += 1;
+      console.log(`Created item: ${item.name}`);
+    }
   }
-  console.log(`Seeded ${DEMO_ITEMS.length} demo items.`);
+  console.log(`Seeded ${created} new items (${DEMO_ITEMS.length} in default list).`);
 }
 
 async function main() {

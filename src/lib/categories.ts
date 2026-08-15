@@ -4,21 +4,23 @@ export const ITEM_CATEGORIES: ItemCategory[] = [
   "vegetables",
   "meat",
   "seafood",
-  "dairy_eggs",
-  "fats_oils",
-  "grains",
   "herbs_spices",
+  "fats_oils",
+  "dairy_eggs",
+  "grains",
+  "cleaning",
   "other",
 ];
 
 export const CATEGORY_LABEL: Record<ItemCategory, string> = {
   vegetables: "Vegetables",
-  meat: "Meat",
+  meat: "Meat / Fish / Protein",
   seafood: "Seafood",
-  dairy_eggs: "Dairy & Eggs",
-  fats_oils: "Fats & Oils",
-  grains: "Grains & Dry Goods",
-  herbs_spices: "Herbs & Spices",
+  herbs_spices: "Spices / Flavors",
+  fats_oils: "Fats / Oils",
+  dairy_eggs: "Dairy",
+  grains: "Starches",
+  cleaning: "Cleaning products",
   other: "Other",
 };
 
@@ -31,14 +33,19 @@ export function guessCategory(name: string): ItemCategory {
   const n = name.toLowerCase();
 
   if (
-    /tomato|onion|garlic|lettuce|spinach|carrot|pepper|potato|cucumber|zucchini|broccoli|celery|cabbage|leek|mushroom|aubergine|eggplant|salad|veg/.test(
+    /soap|sponge|clean|bleach|detergent|sanitiser|sanitizer|wipe/.test(n)
+  ) {
+    return "cleaning";
+  }
+  if (
+    /tomato|onion|garlic|lettuce|spinach|carrot|pepper|potato|cucumber|zucchini|broccoli|celery|cabbage|leek|mushroom|aubergine|eggplant|salad|veg|beetroot|beet|fries|parsley|dill/.test(
       n
     )
   ) {
     return "vegetables";
   }
   if (
-    /chicken|beef|pork|lamb|turkey|duck|meat|bacon|sausage|mince|steak|veal/.test(
+    /chicken|beef|pork|lamb|turkey|duck|meat|bacon|sausage|mince|steak|veal|chorizo|burger/.test(
       n
     )
   ) {
@@ -47,8 +54,7 @@ export function guessCategory(name: string): ItemCategory {
   if (/fish|salmon|tuna|shrimp|prawn|cod|seafood|mussel|clam|crab/.test(n)) {
     return "seafood";
   }
-  if (/milk|cream|cheese|yogurt|yoghurt|egg|butter|dairy/.test(n)) {
-    // Butter is often treated as a fat in kitchens
+  if (/milk|cream|cheese|yogurt|yoghurt|egg|parmesan|dairy/.test(n)) {
     if (/butter|ghee|lard|shortening/.test(n)) return "fats_oils";
     return "dairy_eggs";
   }
@@ -56,14 +62,14 @@ export function guessCategory(name: string): ItemCategory {
     return "fats_oils";
   }
   if (
-    /rice|pasta|flour|grain|noodle|couscous|quinoa|bean|lentil|chickpea|bread|cereal/.test(
+    /rice|pasta|flour|grain|noodle|couscous|quinoa|bean|lentil|chickpea|bread|cereal|starch/.test(
       n
     )
   ) {
     return "grains";
   }
   if (
-    /basil|parsley|cilantro|coriander|thyme|rosemary|oregano|cumin|paprika|spice|herb|peppercorn|salt|chili|chilli/.test(
+    /basil|cilantro|coriander|thyme|rosemary|oregano|cumin|paprika|spice|herb|peppercorn|salt|chili|chilli|gochujang|paste/.test(
       n
     )
   ) {

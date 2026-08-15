@@ -10,6 +10,7 @@ export type ItemCategory =
   | "fats_oils"
   | "grains"
   | "herbs_spices"
+  | "cleaning"
   | "other";
 
 export interface AppUser {
