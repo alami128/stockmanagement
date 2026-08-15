@@ -1,6 +1,15 @@
 export type Role = "chef" | "senior_chef" | "admin";
 export type OrderStatus = "draft" | "ordered" | "completed";
-export type StockUnit = "pcs" | "bottle" | "bags" | "packets" | "kg" | "g" | "L" | "ml";
+export type StockUnit =
+  | "pcs"
+  | "bottle"
+  | "bags"
+  | "packets"
+  | "boxes"
+  | "kg"
+  | "g"
+  | "L"
+  | "ml";
 export type StockStatus = "available" | "low" | "needs_order";
 export type ItemCategory =
   | "vegetables"

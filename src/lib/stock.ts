@@ -44,6 +44,7 @@ export const STOCK_STEP: Record<StockUnit, number> = {
   bottle: 1,
   bags: 1,
   packets: 1,
+  boxes: 1,
   kg: 0.5,
   g: 100,
   L: 0.5,
@@ -55,6 +56,7 @@ export const UNIT_LABEL: Record<StockUnit, { singular: string; plural: string }>
   bottle: { singular: "bottle", plural: "bottles" },
   bags: { singular: "bag", plural: "bags" },
   packets: { singular: "packet", plural: "packets" },
+  boxes: { singular: "box", plural: "boxes" },
   kg: { singular: "kg", plural: "kg" },
   g: { singular: "g", plural: "g" },
   L: { singular: "L", plural: "L" },
@@ -81,6 +83,8 @@ export function unitCaption(unit: StockUnit): string {
       return "Bags";
     case "packets":
       return "Packets";
+    case "boxes":
+      return "Boxes";
     default:
       return unit;
   }

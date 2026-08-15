@@ -75,6 +75,7 @@ export default function AddItemForm() {
           <option value="bottle">bottle</option>
           <option value="bags">bags</option>
           <option value="packets">packets</option>
+          <option value="boxes">boxes</option>
           <option value="kg">kg</option>
           <option value="g">g</option>
           <option value="L">L</option>

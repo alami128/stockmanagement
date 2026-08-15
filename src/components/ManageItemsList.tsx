@@ -6,7 +6,17 @@ import { CATEGORY_LABEL, ITEM_CATEGORIES } from "@/lib/categories";
 import { formatQuantity } from "@/lib/stock";
 import type { Item, ItemCategory, StockUnit } from "@/lib/types";
 
-const UNITS: StockUnit[] = ["pcs", "bottle", "bags", "packets", "kg", "g", "L", "ml"];
+const UNITS: StockUnit[] = [
+  "pcs",
+  "bottle",
+  "bags",
+  "packets",
+  "boxes",
+  "kg",
+  "g",
+  "L",
+  "ml",
+];
 
 export default function ManageItemsList({ items }: { items: Item[] }) {
   const [isPending, startTransition] = useTransition();
