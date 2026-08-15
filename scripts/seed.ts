@@ -1,15 +1,34 @@
 /**
- * Seeds demo data into Supabase: one user per role plus the kitchen
- * order-list starter items.
+ * Seeds demo data into Supabase: one user per role plus the Bleeding Horse
+ * stock list (and a few kitchen extras like cleaning products).
  *
  * Usage:
  *   npm run seed
  *
  * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
- * to be set (e.g. in .env.local).
+ * (e.g. in .env.local). Also run
+ * supabase/migrations/20260815_add_bleeding_horse_categories.sql
+ * in the Supabase SQL editor first.
  */
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+config({ path: ".env" });
+
+import { readFileSync } from "fs";
+import { join } from "path";
 import { createClient } from "@supabase/supabase-js";
+
+const CSV_CATEGORY_MAP: Record<string, string> = {
+  "Meat & Poultry": "meat",
+  Seafood: "seafood",
+  "Dairy & Cheese": "dairy_eggs",
+  "Bread & Bakery": "bread_bakery",
+  "Vegetables & Herbs": "vegetables",
+  "Sauces & Condiments": "sauces",
+  "Cooking & Dry Goods": "dry_goods",
+  "Desserts & Baking": "desserts",
+  Beverages: "beverages",
+};
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -37,34 +56,127 @@ const DEMO_USERS = [
 
 const DEMO_PASSWORD = "kitchen123";
 
-const DEMO_ITEMS: {
+type SeedItem = {
   name: string;
   quantity: number;
   unit: string;
   category: string;
   low_stock_threshold: number;
-}[] = [
-  // Vegetables
-  { name: "Parsley", quantity: 8, unit: "pcs", category: "vegetables", low_stock_threshold: 4 },
-  { name: "Skinny fries", quantity: 10, unit: "kg", category: "vegetables", low_stock_threshold: 5 },
-  { name: "Beetroot", quantity: 6, unit: "kg", category: "vegetables", low_stock_threshold: 3 },
-  { name: "Dill", quantity: 5, unit: "pcs", category: "vegetables", low_stock_threshold: 3 },
+};
 
-  // Meat / Fish / Protein
-  { name: "Chicken breast", quantity: 8, unit: "kg", category: "meat", low_stock_threshold: 4 },
+function guessUnit(name: string, category: string): string {
+  const n = name.toLowerCase();
+  if (category === "sauces" || /mayo|sauce|dressing|glaze|ketchup|mustard|pesto|relish|oil/.test(n)) {
+    return "bottle";
+  }
+  if (category === "beverages") {
+    if (/beans|tea$/.test(n)) return "bags";
+    if (/milk|juice|water|coke|wine/.test(n)) return "bottle";
+    return "bottle";
+  }
+  if (category === "bread_bakery" || category === "desserts") return "pcs";
+  if (category === "dairy_eggs") {
+    if (/milk|cream|buttermilk/.test(n)) return "bottle";
+    if (/ice cream/.test(n)) return "boxes";
+    return "pcs";
+  }
+  if (category === "meat" || category === "seafood") {
+    if (/burger|patty|portion|wing|tender/.test(n)) return "pcs";
+    return "kg";
+  }
+  if (category === "vegetables") {
+    if (/lettuce|leaves|basil|oregano|lemon|garlic|onion|cucumber|pepper/.test(n)) {
+      return "pcs";
+    }
+    return "kg";
+  }
+  if (category === "dry_goods") {
+    if (/egg/.test(n)) return "pcs";
+    if (/oil|guinness/.test(n)) return "bottle";
+    if (/seasoning|pepper|salt|seed|cocoa|sugar|flour|breadcrumb|stock|broth|treacle/.test(n)) {
+      return "bags";
+    }
+    if (/fries|chips/.test(n)) return "kg";
+    return "bags";
+  }
+  if (category === "cleaning") return /soap/.test(n) ? "bottle" : "pcs";
+  return "pcs";
+}
+
+function parseCsvItems(csvPath: string): SeedItem[] {
+  const text = readFileSync(csvPath, "utf8");
+  const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  const items: SeedItem[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    const comma = line.indexOf(",");
+    if (comma < 0) continue;
+    const csvCategory = line.slice(0, comma).trim();
+    const name = line.slice(comma + 1).trim();
+    if (!name) continue;
+
+    const category = CSV_CATEGORY_MAP[csvCategory];
+    if (!category) {
+      console.warn(`Unknown CSV category "${csvCategory}" for ${name}; skipping`);
+      continue;
+    }
+
+    items.push({
+      name,
+      quantity: 5,
+      unit: guessUnit(name, category),
+      category,
+      low_stock_threshold: 2,
+    });
+  }
+
+  return items;
+}
+
+/** Kitchen extras not on the Bleeding Horse menu stock sheet. */
+const EXTRA_ITEMS: SeedItem[] = [
   {
-    name: "Beef (for beef sandwich)",
-    quantity: 0.5,
+    name: "Parsley",
+    quantity: 8,
+    unit: "pcs",
+    category: "vegetables",
+    low_stock_threshold: 4,
+  },
+  {
+    name: "Beetroot",
+    quantity: 6,
     unit: "kg",
-    category: "meat",
+    category: "vegetables",
+    low_stock_threshold: 3,
+  },
+  {
+    name: "Dill",
+    quantity: 5,
+    unit: "pcs",
+    category: "vegetables",
+    low_stock_threshold: 3,
+  },
+  {
+    name: "Gluten free bread",
+    quantity: 6,
+    unit: "pcs",
+    category: "bread_bakery",
+    low_stock_threshold: 4,
+  },
+  {
+    name: "Vegan cheese",
+    quantity: 4,
+    unit: "pcs",
+    category: "dairy_eggs",
     low_stock_threshold: 2,
   },
   {
-    name: "Beef Burgers (3oz)",
-    quantity: 3,
-    unit: "pcs",
-    category: "meat",
-    low_stock_threshold: 6,
+    name: "Gochujang paste",
+    quantity: 2,
+    unit: "bottle",
+    category: "sauces",
+    low_stock_threshold: 1,
   },
   {
     name: "Italian sausages",
@@ -73,40 +185,6 @@ const DEMO_ITEMS: {
     category: "meat",
     low_stock_threshold: 3,
   },
-  { name: "Chorizo", quantity: 3, unit: "kg", category: "meat", low_stock_threshold: 2 },
-
-  // Spices / Flavors
-  {
-    name: "Gochujang paste",
-    quantity: 2,
-    unit: "bottle",
-    category: "herbs_spices",
-    low_stock_threshold: 1,
-  },
-
-  // Dairy (listed under fats column on order sheet)
-  { name: "Vegan cheese", quantity: 4, unit: "pcs", category: "dairy_eggs", low_stock_threshold: 2 },
-  { name: "Parmesan", quantity: 2, unit: "kg", category: "dairy_eggs", low_stock_threshold: 1 },
-  { name: "Milk", quantity: 0, unit: "bottle", category: "dairy_eggs", low_stock_threshold: 4 },
-  { name: "Smoked cheese", quantity: 3, unit: "pcs", category: "dairy_eggs", low_stock_threshold: 2 },
-
-  // Starches
-  {
-    name: "Gluten free bread",
-    quantity: 6,
-    unit: "pcs",
-    category: "grains",
-    low_stock_threshold: 4,
-  },
-  {
-    name: "Plain flour",
-    quantity: 5,
-    unit: "kg",
-    category: "grains",
-    low_stock_threshold: 5,
-  },
-
-  // Cleaning products
   {
     name: "Hand soap (North Shore)",
     quantity: 2,
@@ -122,6 +200,19 @@ const DEMO_ITEMS: {
     low_stock_threshold: 4,
   },
 ];
+
+function mergeItems(csvItems: SeedItem[], extras: SeedItem[]): SeedItem[] {
+  const byName = new Map<string, SeedItem>();
+  for (const item of csvItems) {
+    byName.set(item.name.toLowerCase(), item);
+  }
+  for (const item of extras) {
+    if (!byName.has(item.name.toLowerCase())) {
+      byName.set(item.name.toLowerCase(), item);
+    }
+  }
+  return [...byName.values()];
+}
 
 async function seedUsers() {
   for (const u of DEMO_USERS) {
@@ -159,45 +250,103 @@ async function seedUsers() {
   }
 }
 
-async function seedItems() {
+async function seedItems(items: SeedItem[]) {
+  const CATEGORY_FALLBACK: Record<string, string> = {
+    bread_bakery: "grains",
+    sauces: "herbs_spices",
+    dry_goods: "grains",
+    desserts: "other",
+    beverages: "other",
+  };
+
   let created = 0;
-  for (const item of DEMO_ITEMS) {
+  let updated = 0;
+  let skipped = 0;
+  let failed = 0;
+  let usedFallback = false;
+
+  for (const item of items) {
     const { data: existing } = await supabase
       .from("items")
-      .select("id")
+      .select("id, category")
       .eq("name", item.name)
       .maybeSingle();
 
     if (existing) {
-      console.log(`Skipping item ${item.name} (already exists)`);
+      if (existing.category !== item.category) {
+        const { error } = await supabase
+          .from("items")
+          .update({ category: item.category })
+          .eq("id", existing.id);
+        if (error) {
+          // DB may not allow the new category yet — leave as-is.
+        } else {
+          updated += 1;
+          console.log(`Updated category: ${item.name} → ${item.category}`);
+        }
+      } else {
+        skipped += 1;
+      }
       continue;
     }
 
     let { error } = await supabase.from("items").insert(item);
 
-    // Older DBs may not allow `cleaning` yet — fall back so items still appear.
-    if (error && item.category === "cleaning") {
-      console.warn(
-        `Category "cleaning" not allowed yet for ${item.name}; inserting as "other". Run supabase/migrations/20260815_add_cleaning_category.sql`
-      );
-      ({ error } = await supabase
-        .from("items")
-        .insert({ ...item, category: "other" }));
+    if (error) {
+      const msg = error.message.toLowerCase();
+      const fallback = CATEGORY_FALLBACK[item.category];
+      if (
+        fallback &&
+        (msg.includes("check constraint") || msg.includes("category"))
+      ) {
+        usedFallback = true;
+        ({ error } = await supabase
+          .from("items")
+          .insert({ ...item, category: fallback }));
+      }
     }
 
     if (error) {
+      failed += 1;
       console.error(`Failed to create item ${item.name}:`, error.message);
     } else {
       created += 1;
-      console.log(`Created item: ${item.name}`);
+      console.log(`Created item: ${item.name} (${item.category})`);
     }
   }
-  console.log(`Seeded ${created} new items (${DEMO_ITEMS.length} in default list).`);
+
+  console.log(
+    `Seeded ${created} new items (${updated} categories updated, ${skipped} unchanged, ${failed} failed, ${items.length} in list).`
+  );
+  if (usedFallback) {
+    console.warn(
+      "\nSome items used temporary categories. Run this in Supabase SQL Editor, then re-run npm run seed:\n"
+    );
+    console.warn(
+      "  alter table public.items drop constraint if exists items_category_check;\n" +
+        "  alter table public.items add constraint items_category_check\n" +
+        "  check (category in (\n" +
+        "    'vegetables', 'meat', 'seafood', 'dairy_eggs', 'bread_bakery',\n" +
+        "    'sauces', 'dry_goods', 'desserts', 'beverages',\n" +
+        "    'fats_oils', 'grains', 'herbs_spices', 'cleaning', 'other'\n" +
+        "  ));\n"
+    );
+  }
 }
 
 async function main() {
+  const csvPath = join(
+    process.cwd(),
+    "scripts/data/bleeding_horse_stock_list_clean.csv"
+  );
+  const csvItems = parseCsvItems(csvPath);
+  const items = mergeItems(csvItems, EXTRA_ITEMS);
+  console.log(
+    `Loaded ${csvItems.length} CSV items + extras → ${items.length} total`
+  );
+
   await seedUsers();
-  await seedItems();
+  await seedItems(items);
   console.log("\nDone. Demo logins (password: kitchen123):");
   DEMO_USERS.forEach((u) => console.log(`  ${u.role.padEnd(12)} ${u.email}`));
 }

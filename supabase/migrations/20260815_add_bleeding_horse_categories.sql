@@ -1,4 +1,4 @@
--- Allow cleaning category (and keep existing ones)
+-- Allow Bleeding Horse stock-list categories
 alter table public.items drop constraint if exists items_category_check;
 alter table public.items
   add constraint items_category_check
