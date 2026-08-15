@@ -8,8 +8,8 @@ export function getStockStatus(item: Pick<Item, "quantity" | "low_stock_threshol
 
 export const STOCK_STATUS_LABEL: Record<StockStatus, string> = {
   available: "Available",
-  low: "Low Stock",
-  needs_order: "Needs Order",
+  low: "Running Low",
+  needs_order: "Out of Stock",
 };
 
 // Tailwind-safe static class strings (no dynamic interpolation)

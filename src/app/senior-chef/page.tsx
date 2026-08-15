@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
-import CreateOrderForm from "@/components/CreateOrderForm";
+import StockOverview from "@/components/StockOverview";
 import StatusBadge from "@/components/StatusBadge";
-import { getStockStatus } from "@/lib/stock";
 import type { Item } from "@/lib/types";
 
 export default async function SeniorChefPage() {
@@ -20,23 +19,23 @@ export default async function SeniorChefPage() {
 
   const items = (itemData || []) as Item[];
 
-  // Anything Low Stock or Needs Order belongs on this list. Needs Order
-  // items are sorted first since they're the most urgent.
-  const attentionItems = items
-    .filter((i) => getStockStatus(i) !== "available")
-    .sort((a, b) => {
-      const order = { needs_order: 0, low: 1, available: 2 } as const;
-      return order[getStockStatus(a)] - order[getStockStatus(b)];
-    });
-
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <DashboardHeader
-        title="What Needs Ordering"
-        subtitle="Items running low or out, with what's left in the kitchen"
+        title="Kitchen Stock"
+        subtitle="A live look at what's on hand"
       />
 
-      <CreateOrderForm items={attentionItems} />
+      <div className="mb-6">
+        <Link
+          href="/senior-chef/create-order"
+          className="btn block w-full bg-orange-600 text-center text-white hover:bg-orange-700"
+        >
+          Create Order
+        </Link>
+      </div>
+
+      <StockOverview items={items} />
 
       <section className="mt-10">
         <h2 className="mb-3 text-lg font-bold text-gray-900">
