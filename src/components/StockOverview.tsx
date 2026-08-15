@@ -53,7 +53,12 @@ export default function StockOverview({ items }: { items: Item[] }) {
                   key={item.id}
                   className="flex items-center gap-3 px-3.5 py-3"
                 >
-                  <ItemIcon name={item.name} unit={item.unit} size="md" />
+                  <ItemIcon
+                    name={item.name}
+                    unit={item.unit}
+                    status={status}
+                    size="md"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-neutral-900">
                       {item.name}

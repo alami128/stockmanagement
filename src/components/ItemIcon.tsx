@@ -16,15 +16,15 @@ type IconKind =
 
 const STATUS_TONE: Record<StockStatus, { wrap: string; ink: string }> = {
   needs_order: {
-    wrap: "bg-neutral-900",
+    wrap: "bg-red-500",
     ink: "text-white",
   },
   low: {
-    wrap: "bg-neutral-900",
+    wrap: "bg-yellow-400",
     ink: "text-white",
   },
   available: {
-    wrap: "bg-neutral-900",
+    wrap: "bg-green-500",
     ink: "text-white",
   },
 };

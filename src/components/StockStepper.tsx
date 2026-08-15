@@ -34,7 +34,12 @@ export default function StockStepper({ item }: { item: Item }) {
     <div className="rounded-xl border border-neutral-200 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <ItemIcon name={item.name} unit={item.unit} size="md" />
+          <ItemIcon
+            name={item.name}
+            unit={item.unit}
+            status={status}
+            size="md"
+          />
           <div className="min-w-0">
             <p className="truncate text-lg font-semibold text-neutral-900">
               {item.name}
