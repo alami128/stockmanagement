@@ -5,7 +5,7 @@ import { renameItem, removeItem, updateItemSettings } from "@/lib/actions/items"
 import { formatQuantity } from "@/lib/stock";
 import type { Item, StockUnit } from "@/lib/types";
 
-const UNITS: StockUnit[] = ["pcs", "kg", "g", "L", "ml"];
+const UNITS: StockUnit[] = ["pcs", "bottle", "kg", "g", "L", "ml"];
 
 export default function ManageItemsList({ items }: { items: Item[] }) {
   const [isPending, startTransition] = useTransition();

@@ -20,8 +20,8 @@ export default function OrderStatusActions({
   const label = status === "draft" ? "Mark as Ordered" : "Mark as Completed";
   const color =
     status === "draft"
-      ? "bg-ordered hover:bg-blue-700"
-      : "bg-completed hover:bg-teal-800";
+      ? "bg-gradient-to-r from-sky-600 to-blue-600 hover:brightness-105"
+      : "bg-gradient-to-r from-teal-600 to-emerald-600 hover:brightness-105";
 
   return (
     <button
@@ -29,7 +29,7 @@ export default function OrderStatusActions({
         startTransition(() => markOrderStatus(orderId, next as any))
       }
       disabled={isPending}
-      className={`btn w-full text-white disabled:opacity-60 ${color}`}
+      className={`btn w-full text-white shadow-[0_16px_36px_-20px_rgba(15,23,42,0.45)] disabled:opacity-60 ${color}`}
     >
       {isPending ? "Updating..." : label}
     </button>

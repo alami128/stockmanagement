@@ -11,6 +11,10 @@ const config: Config = {
         ordered: "#2563eb",
         completed: "#0f766e",
       },
+      fontFamily: {
+        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
     },
   },
   plugins: [],

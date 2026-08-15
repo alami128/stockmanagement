@@ -1,6 +1,6 @@
 export type Role = "chef" | "senior_chef" | "admin";
 export type OrderStatus = "draft" | "ordered" | "completed";
-export type StockUnit = "pcs" | "kg" | "g" | "L" | "ml";
+export type StockUnit = "pcs" | "bottle" | "kg" | "g" | "L" | "ml";
 export type StockStatus = "available" | "low" | "needs_order";
 
 export interface AppUser {

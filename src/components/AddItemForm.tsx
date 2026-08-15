@@ -58,6 +58,7 @@ export default function AddItemForm() {
           className="w-full rounded-xl border border-gray-300 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
         >
           <option value="pcs">pcs</option>
+          <option value="bottle">bottle</option>
           <option value="kg">kg</option>
           <option value="g">g</option>
           <option value="L">L</option>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import ItemIcon from "@/components/ItemIcon";
 import { createOrder } from "@/lib/actions/orders";
 import {
   getStockStatus,
@@ -29,6 +30,8 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
     setLines((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   }
 
+  const selectedCount = items.filter((i) => lines[i.id]?.selected).length;
+
   function submit() {
     setError(null);
     const orderLines = items
@@ -49,7 +52,6 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
       try {
         await createOrder(orderLines);
       } catch (e) {
-        // NEXT_REDIRECT is thrown by redirect() on success - ignore it.
         if (e instanceof Error && e.message !== "NEXT_REDIRECT") {
           setError(e.message);
         }
@@ -59,7 +61,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
 
   if (items.length === 0) {
     return (
-      <p className="rounded-2xl bg-white p-5 text-gray-500 shadow-sm">
+      <p className="rounded-3xl border border-dashed border-emerald-200 bg-emerald-50/60 px-5 py-10 text-center text-emerald-800">
         Nothing needs ordering right now. Everything is stocked above its
         reorder point.
       </p>
@@ -68,67 +70,122 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
 
   return (
     <div className="space-y-3">
-      {items.map((item) => {
+      {items.map((item, index) => {
         const line = lines[item.id];
         const status = getStockStatus(item);
+        const unitHint =
+          item.unit === "pcs"
+            ? "pcs"
+            : item.unit === "bottle"
+              ? "bottles"
+              : item.unit;
+
         return (
-          <div key={item.id} className="rounded-2xl bg-white p-5 shadow-sm">
-            <label className="flex items-start gap-4">
+          <div
+            key={item.id}
+            className={`stock-row overflow-hidden rounded-2xl border bg-white/95 shadow-[0_1px_0_rgba(28,25,23,0.04)] backdrop-blur transition ${
+              line.selected
+                ? "border-orange-300 ring-2 ring-orange-100"
+                : "border-white/80"
+            }`}
+            style={{ animationDelay: `${index * 45}ms` }}
+          >
+            <div className="flex items-start gap-4 p-4 sm:p-5">
               <input
                 type="checkbox"
                 checked={line.selected}
                 onChange={(e) =>
                   update(item.id, { selected: e.target.checked })
                 }
-                className="mt-2 h-6 w-6 accent-orange-600"
+                className="mt-3 h-6 w-6 accent-orange-600"
+                aria-label={`Select ${item.name}`}
               />
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xl font-semibold text-gray-900">
-                    {item.name}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">
+              <button
+                type="button"
+                onClick={() => update(item.id, { selected: !line.selected })}
+                className="shrink-0"
+                tabIndex={-1}
+                aria-hidden
+              >
+                <ItemIcon
+                  name={item.name}
+                  unit={item.unit}
+                  status={status}
+                  size="lg"
+                />
+              </button>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      update(item.id, { selected: !line.selected })
+                    }
+                    className="text-left"
+                  >
+                    <p className="font-display text-xl font-semibold tracking-tight text-stone-900">
+                      {item.name}
+                    </p>
+                    <p className="mt-0.5 text-sm text-stone-500">
                       {formatQuantity(item.quantity, item.unit)} left
-                    </span>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${STOCK_STATUS_BADGE[status]}`}
-                    >
-                      {STOCK_STATUS_LABEL[status]}
-                    </span>
+                    </p>
+                  </button>
+                  <span
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${STOCK_STATUS_BADGE[status]}`}
+                  >
+                    {STOCK_STATUS_LABEL[status]}
+                  </span>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-stone-400">
+                      Order qty ({unitHint})
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      placeholder={
+                        item.unit === "bottle"
+                          ? "e.g. 6 bottles"
+                          : item.unit === "pcs"
+                            ? "e.g. 24 pcs"
+                            : `Quantity (${item.unit})`
+                      }
+                      value={line.quantity}
+                      onChange={(e) =>
+                        update(item.id, {
+                          quantity: e.target.value,
+                          selected: e.target.value !== "" || line.selected,
+                        })
+                      }
+                      className="w-full rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-lg text-stone-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-stone-400">
+                      Notes
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Optional"
+                      value={line.notes}
+                      onChange={(e) =>
+                        update(item.id, { notes: e.target.value })
+                      }
+                      className="w-full rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-lg text-stone-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                    />
                   </div>
                 </div>
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <input
-                    type="number"
-                    min="0"
-                    step="any"
-                    placeholder={`Quantity to order (${item.unit})`}
-                    value={line.quantity}
-                    onChange={(e) =>
-                      update(item.id, {
-                        quantity: e.target.value,
-                        selected: e.target.value !== "" || line.selected,
-                      })
-                    }
-                    className="rounded-xl border border-gray-300 px-4 py-3 text-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Notes (optional)"
-                    value={line.notes}
-                    onChange={(e) => update(item.id, { notes: e.target.value })}
-                    className="rounded-xl border border-gray-300 px-4 py-3 text-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  />
-                </div>
               </div>
-            </label>
+            </div>
           </div>
         );
       })}
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
           {error}
         </p>
       )}
@@ -136,9 +193,15 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
       <button
         onClick={submit}
         disabled={isPending}
-        className="btn w-full bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-60"
+        className="btn group relative w-full overflow-hidden bg-gradient-to-r from-orange-600 to-rose-500 text-white shadow-[0_16px_40px_-20px_rgba(234,88,12,0.9)] hover:from-orange-500 hover:to-rose-400 disabled:opacity-60"
       >
-        {isPending ? "Creating order..." : "Create order"}
+        <span className="relative z-10">
+          {isPending
+            ? "Creating order..."
+            : selectedCount > 0
+              ? `Create order · ${selectedCount} item${selectedCount === 1 ? "" : "s"}`
+              : "Create order"}
+        </span>
       </button>
     </div>
   );
