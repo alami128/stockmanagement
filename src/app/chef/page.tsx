@@ -1,14 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
-import StockStepper from "@/components/StockStepper";
+import CategoryMenu from "@/components/CategoryMenu";
 import AddItemForm from "@/components/AddItemForm";
-import {
-  CATEGORY_LABEL,
-  groupItemsByCategory,
-  isItemCategory,
-} from "@/lib/categories";
+import { groupItemsByCategory, isItemCategory } from "@/lib/categories";
 import { getStockStatus } from "@/lib/stock";
-import type { Item, ItemCategory } from "@/lib/types";
+import type { Item } from "@/lib/types";
 
 function withCategory(item: Item): Item {
   return {
@@ -35,24 +31,16 @@ export default async function ChefPage() {
       <DashboardHeader
         eyebrow="Chef"
         title="Kitchen Items"
-        subtitle="Stock grouped by category — adjust what’s on hand as you cook."
+        subtitle="Open a category to update what’s on hand."
       />
 
-      <div className="space-y-8">
-        {groups.map(({ category, items: sectionItems }) => (
-          <CategorySection
-            key={category}
-            category={category}
-            items={sectionItems}
-          />
-        ))}
-
-        {items.length === 0 && (
-          <p className="rounded-xl border border-dashed border-neutral-300 bg-white p-5 text-neutral-500">
-            No items yet. Add your first item below.
-          </p>
-        )}
-      </div>
+      {groups.length > 0 ? (
+        <CategoryMenu groups={groups} />
+      ) : (
+        <p className="rounded-xl border border-dashed border-neutral-300 bg-white p-5 text-neutral-500">
+          No items yet. Add your first item below.
+        </p>
+      )}
 
       <div className="mt-8">
         <h2 className="mb-3 font-display text-lg font-semibold text-neutral-900">
@@ -61,31 +49,5 @@ export default async function ChefPage() {
         <AddItemForm />
       </div>
     </main>
-  );
-}
-
-function CategorySection({
-  category,
-  items,
-}: {
-  category: ItemCategory;
-  items: Item[];
-}) {
-  return (
-    <section>
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 className="font-display text-lg font-semibold text-neutral-900">
-          {CATEGORY_LABEL[category]}
-        </h2>
-        <span className="text-sm text-neutral-400">
-          {items.length}
-        </span>
-      </div>
-      <div className="space-y-2">
-        {items.map((item) => (
-          <StockStepper key={item.id} item={item} />
-        ))}
-      </div>
-    </section>
   );
 }
