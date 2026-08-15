@@ -18,13 +18,6 @@ interface Persona {
 
 const PERSONAS: Persona[] = [
   {
-    id: "chef",
-    label: "Chef",
-    subtitle: "Update kitchen stock",
-    email: "chef@example.com",
-    accent: "border-blue-500 hover:bg-blue-50",
-  },
-  {
     id: "head_chef",
     label: "Head Chef",
     subtitle: "Stock overview & orders",
@@ -32,9 +25,16 @@ const PERSONAS: Persona[] = [
     accent: "border-green-500 hover:bg-green-50",
   },
   {
+    id: "chef",
+    label: "Chef",
+    subtitle: "Update kitchen stock",
+    email: "chef@example.com",
+    accent: "border-blue-500 hover:bg-blue-50",
+  },
+  {
     id: "kps",
     label: "Kps",
-    subtitle: "Admin & settings",
+    subtitle: "Update the cleaning products stock",
     email: "admin@example.com",
     accent: "border-red-500 hover:bg-red-50",
   },
