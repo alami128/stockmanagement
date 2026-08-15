@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { renameItem, removeItem, updateItemSettings } from "@/lib/actions/items";
+import { CATEGORY_LABEL, ITEM_CATEGORIES } from "@/lib/categories";
 import { formatQuantity } from "@/lib/stock";
-import type { Item, StockUnit } from "@/lib/types";
+import type { Item, ItemCategory, StockUnit } from "@/lib/types";
 
 const UNITS: StockUnit[] = ["pcs", "bottle", "kg", "g", "L", "ml"];
 
@@ -35,6 +36,9 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
                 <span className="font-medium text-gray-900">{item.name}</span>
                 <span className="ml-2 text-sm text-gray-400">
                   {formatQuantity(item.quantity, item.unit)} on hand
+                </span>
+                <span className="ml-2 text-xs font-semibold uppercase tracking-wide text-stone-400">
+                  {CATEGORY_LABEL[item.category] || "Other"}
                 </span>
               </div>
             )}
@@ -74,6 +78,30 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
 
           <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-3">
             <label className="flex items-center gap-2 text-sm text-gray-500">
+              Category
+              <select
+                defaultValue={item.category || "other"}
+                disabled={isPending}
+                onChange={(e) =>
+                  startTransition(() =>
+                    updateItemSettings(
+                      item.id,
+                      item.unit,
+                      item.low_stock_threshold,
+                      e.target.value as ItemCategory
+                    )
+                  )
+                }
+                className="rounded-lg border border-gray-300 px-2 py-1"
+              >
+                {ITEM_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {CATEGORY_LABEL[cat]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-500">
               Unit
               <select
                 defaultValue={item.unit}
@@ -83,7 +111,8 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
                     updateItemSettings(
                       item.id,
                       e.target.value as StockUnit,
-                      item.low_stock_threshold
+                      item.low_stock_threshold,
+                      item.category
                     )
                   )
                 }
@@ -108,7 +137,12 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
                   const val = parseFloat(e.target.value);
                   if (Number.isFinite(val)) {
                     startTransition(() =>
-                      updateItemSettings(item.id, item.unit, val)
+                      updateItemSettings(
+                        item.id,
+                        item.unit,
+                        val,
+                        item.category
+                      )
                     );
                   }
                 }}

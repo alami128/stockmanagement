@@ -37,15 +37,21 @@ const DEMO_USERS = [
 
 const DEMO_PASSWORD = "kitchen123";
 
-const DEMO_ITEMS: { name: string; quantity: number; unit: string; low_stock_threshold: number }[] = [
-  { name: "Chicken", quantity: 12, unit: "kg", low_stock_threshold: 5 },
-  { name: "Tomatoes", quantity: 2, unit: "kg", low_stock_threshold: 5 },
-  { name: "Milk", quantity: 0, unit: "bottle", low_stock_threshold: 4 },
-  { name: "Rice", quantity: 20, unit: "kg", low_stock_threshold: 8 },
-  { name: "Onions", quantity: 15, unit: "kg", low_stock_threshold: 5 },
-  { name: "Olive Oil", quantity: 3, unit: "bottle", low_stock_threshold: 2 },
-  { name: "Eggs", quantity: 6, unit: "pcs", low_stock_threshold: 12 },
-  { name: "Butter", quantity: 1, unit: "kg", low_stock_threshold: 2 },
+const DEMO_ITEMS: {
+  name: string;
+  quantity: number;
+  unit: string;
+  category: string;
+  low_stock_threshold: number;
+}[] = [
+  { name: "Chicken", quantity: 12, unit: "kg", category: "meat", low_stock_threshold: 5 },
+  { name: "Tomatoes", quantity: 2, unit: "kg", category: "vegetables", low_stock_threshold: 5 },
+  { name: "Milk", quantity: 0, unit: "bottle", category: "dairy_eggs", low_stock_threshold: 4 },
+  { name: "Rice", quantity: 20, unit: "kg", category: "grains", low_stock_threshold: 8 },
+  { name: "Onions", quantity: 15, unit: "kg", category: "vegetables", low_stock_threshold: 5 },
+  { name: "Olive Oil", quantity: 3, unit: "bottle", category: "fats_oils", low_stock_threshold: 2 },
+  { name: "Eggs", quantity: 6, unit: "pcs", category: "dairy_eggs", low_stock_threshold: 12 },
+  { name: "Butter", quantity: 1, unit: "kg", category: "fats_oils", low_stock_threshold: 2 },
 ];
 
 async function seedUsers() {

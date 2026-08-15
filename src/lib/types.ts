@@ -2,6 +2,15 @@ export type Role = "chef" | "senior_chef" | "admin";
 export type OrderStatus = "draft" | "ordered" | "completed";
 export type StockUnit = "pcs" | "bottle" | "kg" | "g" | "L" | "ml";
 export type StockStatus = "available" | "low" | "needs_order";
+export type ItemCategory =
+  | "vegetables"
+  | "meat"
+  | "seafood"
+  | "dairy_eggs"
+  | "fats_oils"
+  | "grains"
+  | "herbs_spices"
+  | "other";
 
 export interface AppUser {
   id: string;
@@ -16,6 +25,7 @@ export interface Item {
   name: string;
   quantity: number;
   unit: StockUnit;
+  category: ItemCategory;
   low_stock_threshold: number;
   updated_at: string;
   updated_by: string | null;

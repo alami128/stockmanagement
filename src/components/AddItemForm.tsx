@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { addItem } from "@/lib/actions/items";
+import { CATEGORY_LABEL, ITEM_CATEGORIES } from "@/lib/categories";
 
 function AddButton() {
   const { pending } = useFormStatus();
@@ -35,6 +36,22 @@ export default function AddItemForm() {
         required
         className="col-span-2 rounded-xl border border-gray-300 px-4 py-3 text-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 sm:col-span-4"
       />
+      <div className="col-span-2 sm:col-span-2">
+        <label className="mb-1 block text-xs font-medium text-gray-500">
+          Category
+        </label>
+        <select
+          name="category"
+          defaultValue="other"
+          className="w-full rounded-xl border border-gray-300 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        >
+          {ITEM_CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {CATEGORY_LABEL[cat]}
+            </option>
+          ))}
+        </select>
+      </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-gray-500">
           Starting amount
@@ -78,7 +95,7 @@ export default function AddItemForm() {
           className="w-full rounded-xl border border-gray-300 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
         />
       </div>
-      <div className="col-span-2 sm:col-span-4">
+      <div className="col-span-2 sm:col-span-2">
         <AddButton />
       </div>
     </form>
