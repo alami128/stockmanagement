@@ -13,16 +13,17 @@ export const STOCK_STATUS_LABEL: Record<StockStatus, string> = {
 };
 
 // Tailwind-safe static class strings (no dynamic interpolation)
+// Outline “stroke” pills for status titles — items stay black & white.
 export const STOCK_STATUS_BADGE: Record<StockStatus, string> = {
-  available: "bg-green-100 text-green-700",
-  low: "bg-orange-100 text-orange-700",
-  needs_order: "bg-red-100 text-red-700",
+  available: "border border-green-500 bg-white text-green-700",
+  low: "border border-orange-500 bg-white text-orange-700",
+  needs_order: "border border-red-500 bg-white text-red-700",
 };
 
 export const STOCK_STATUS_BAR: Record<StockStatus, string> = {
-  available: "bg-green-500",
-  low: "bg-orange-500",
-  needs_order: "bg-red-500",
+  available: "bg-neutral-400",
+  low: "bg-neutral-500",
+  needs_order: "bg-neutral-800",
 };
 
 export const STOCK_STATUS_TEXT: Record<StockStatus, string> = {
@@ -32,15 +33,9 @@ export const STOCK_STATUS_TEXT: Record<StockStatus, string> = {
 };
 
 export const STOCK_STATUS_BORDER: Record<StockStatus, string> = {
-  available: "border-green-200",
-  low: "border-orange-200",
-  needs_order: "border-red-200",
-};
-
-export const STOCK_STATUS_DOT: Record<StockStatus, string> = {
-  available: "bg-green-500",
-  low: "bg-orange-500",
-  needs_order: "bg-red-500",
+  available: "border-green-500",
+  low: "border-orange-500",
+  needs_order: "border-red-500",
 };
 
 // How much to add/remove per tap of the increment buttons, per unit.

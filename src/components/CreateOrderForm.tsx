@@ -130,7 +130,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
                     </p>
                   </button>
                   <span
-                    className={`rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-wide ${STOCK_STATUS_BADGE[status]}`}
+                    className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${STOCK_STATUS_BADGE[status]}`}
                   >
                     {STOCK_STATUS_LABEL[status]}
                   </span>

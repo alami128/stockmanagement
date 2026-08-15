@@ -2,9 +2,7 @@ import ItemIcon from "@/components/ItemIcon";
 import {
   getStockStatus,
   STOCK_STATUS_LABEL,
-  STOCK_STATUS_TEXT,
-  STOCK_STATUS_DOT,
-  STOCK_STATUS_BORDER,
+  STOCK_STATUS_BADGE,
   formatQuantity,
 } from "@/lib/stock";
 import type { Item, StockStatus } from "@/lib/types";
@@ -38,13 +36,10 @@ export default function StockOverview({ items }: { items: Item[] }) {
 
         return (
           <section key={status}>
-            <div className="mb-3 flex items-baseline justify-between gap-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <h2
-                className={`flex items-center gap-2 font-display text-lg font-semibold ${STOCK_STATUS_TEXT[status]}`}
+                className={`inline-flex items-center rounded-full px-3.5 py-1.5 font-display text-sm font-semibold tracking-tight ${STOCK_STATUS_BADGE[status]}`}
               >
-                <span
-                  className={`h-2 w-2 rounded-full ${STOCK_STATUS_DOT[status]}`}
-                />
                 {STOCK_STATUS_LABEL[status]}
               </h2>
               <span className="text-sm text-neutral-400">
@@ -52,20 +47,13 @@ export default function StockOverview({ items }: { items: Item[] }) {
               </span>
             </div>
 
-            <ul
-              className={`divide-y divide-neutral-100 overflow-hidden rounded-xl border bg-white ${STOCK_STATUS_BORDER[status]}`}
-            >
+            <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-neutral-200 bg-white">
               {sectionItems.map((item) => (
                 <li
                   key={item.id}
                   className="flex items-center gap-3 px-3.5 py-3"
                 >
-                  <ItemIcon
-                    name={item.name}
-                    unit={item.unit}
-                    status={status}
-                    size="md"
-                  />
+                  <ItemIcon name={item.name} unit={item.unit} size="md" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-neutral-900">
                       {item.name}
@@ -78,9 +66,7 @@ export default function StockOverview({ items }: { items: Item[] }) {
                           : item.unit}
                     </p>
                   </div>
-                  <p
-                    className={`text-base font-semibold tabular-nums ${STOCK_STATUS_TEXT[status]}`}
-                  >
+                  <p className="text-base font-semibold tabular-nums text-neutral-900">
                     {formatQuantity(item.quantity, item.unit)}
                   </p>
                 </li>

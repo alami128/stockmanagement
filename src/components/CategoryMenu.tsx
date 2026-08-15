@@ -47,7 +47,7 @@ export default function CategoryMenu({
               </span>
               <span className="flex items-center gap-2.5">
                 {attention > 0 && (
-                  <span className="rounded-md bg-orange-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-orange-700">
+                  <span className="rounded-full border border-orange-500 bg-white px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-orange-700">
                     {attention} need attention
                   </span>
                 )}
