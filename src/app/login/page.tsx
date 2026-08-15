@@ -13,8 +13,7 @@ interface Persona {
   label: string;
   subtitle: string;
   email: string;
-  ring: string;
-  avatarSrc: string;
+  accent: string;
 }
 
 const PERSONAS: Persona[] = [
@@ -23,24 +22,21 @@ const PERSONAS: Persona[] = [
     label: "Chef",
     subtitle: "Update kitchen stock",
     email: "chef@example.com",
-    ring: "ring-blue-500",
-    avatarSrc: "/avatars/chef.png",
+    accent: "border-blue-500 hover:bg-blue-50",
   },
   {
     id: "head_chef",
     label: "Head Chef",
     subtitle: "Stock overview & orders",
     email: "seniorchef@example.com",
-    ring: "ring-green-500",
-    avatarSrc: "/avatars/head-chef.png",
+    accent: "border-green-500 hover:bg-green-50",
   },
   {
     id: "kps",
     label: "Kps",
     subtitle: "Admin & settings",
     email: "admin@example.com",
-    ring: "ring-red-500",
-    avatarSrc: "/avatars/kps.png",
+    accent: "border-red-500 hover:bg-red-50",
   },
 ];
 
@@ -54,31 +50,6 @@ function SubmitButton() {
     >
       {pending ? "Signing in..." : "Log in"}
     </button>
-  );
-}
-
-function RoleAvatar({
-  src,
-  label,
-  className = "",
-}: {
-  src: string;
-  label: string;
-  className?: string;
-}) {
-  return (
-    <span
-      className={`block overflow-hidden rounded-full bg-black ${className}`}
-    >
-      <img
-        src={src}
-        alt={label}
-        width={150}
-        height={150}
-        className="h-full w-full scale-110 object-cover"
-        draggable={false}
-      />
-    </span>
   );
 }
 
@@ -97,30 +68,19 @@ export default function LoginPage() {
         </p>
 
         {!persona ? (
-          <div className="mt-8 grid grid-cols-3 gap-3 sm:gap-4">
+          <div className="mt-8 grid grid-cols-1 gap-3">
             {PERSONAS.map((p) => (
               <button
                 key={p.id}
                 type="button"
                 onClick={() => setPersona(p)}
-                className="group flex flex-col items-center gap-2 rounded-2xl border border-neutral-200 p-3 transition hover:border-neutral-400 hover:bg-neutral-50 active:scale-[0.98] sm:p-4"
+                className={`rounded-2xl border-2 bg-white px-5 py-4 text-left transition active:scale-[0.99] ${p.accent}`}
               >
-                <span
-                  className={`rounded-full ring-2 ring-offset-2 ring-offset-white transition group-hover:ring-4 ${p.ring}`}
-                >
-                  <RoleAvatar
-                    src={p.avatarSrc}
-                    label={p.label}
-                    className="h-24 w-24 sm:h-28 sm:w-28"
-                  />
+                <span className="block text-lg font-semibold text-neutral-900">
+                  {p.label}
                 </span>
-                <span className="text-center">
-                  <span className="block text-sm font-semibold text-neutral-900 sm:text-base">
-                    {p.label}
-                  </span>
-                  <span className="mt-0.5 hidden text-[11px] leading-tight text-neutral-400 sm:block">
-                    {p.subtitle}
-                  </span>
+                <span className="mt-0.5 block text-sm text-neutral-500">
+                  {p.subtitle}
                 </span>
               </button>
             ))}
@@ -128,15 +88,6 @@ export default function LoginPage() {
         ) : (
           <div className="mt-8">
             <div className="mb-6 flex items-center gap-4">
-              <span
-                className={`rounded-full ring-2 ring-offset-2 ring-offset-white ${persona.ring}`}
-              >
-                <RoleAvatar
-                  src={persona.avatarSrc}
-                  label={persona.label}
-                  className="h-20 w-20"
-                />
-              </span>
               <div className="min-w-0 flex-1">
                 <p className="font-display text-xl font-semibold text-neutral-900">
                   {persona.label}
