@@ -42,6 +42,8 @@ export const STOCK_STATUS_BORDER: Record<StockStatus, string> = {
 export const STOCK_STEP: Record<StockUnit, number> = {
   pcs: 1,
   bottle: 1,
+  bags: 1,
+  packets: 1,
   kg: 0.5,
   g: 100,
   L: 0.5,
@@ -51,6 +53,8 @@ export const STOCK_STEP: Record<StockUnit, number> = {
 export const UNIT_LABEL: Record<StockUnit, { singular: string; plural: string }> = {
   pcs: { singular: "pc", plural: "pcs" },
   bottle: { singular: "bottle", plural: "bottles" },
+  bags: { singular: "bag", plural: "bags" },
+  packets: { singular: "packet", plural: "packets" },
   kg: { singular: "kg", plural: "kg" },
   g: { singular: "g", plural: "g" },
   L: { singular: "L", plural: "L" },
@@ -61,7 +65,24 @@ export function formatQuantity(quantity: number, unit: StockUnit): string {
   const trimmed = Number.isInteger(quantity)
     ? quantity.toString()
     : quantity.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-  const label =
-    quantity === 1 ? UNIT_LABEL[unit].singular : UNIT_LABEL[unit].plural;
+  const labels = UNIT_LABEL[unit] ?? { singular: unit, plural: unit };
+  const label = quantity === 1 ? labels.singular : labels.plural;
   return `${trimmed} ${label}`;
 }
+
+/** Short unit caption for UI (e.g. under item names). */
+export function unitCaption(unit: StockUnit): string {
+  switch (unit) {
+    case "pcs":
+      return "Pieces";
+    case "bottle":
+      return "Bottles";
+    case "bags":
+      return "Bags";
+    case "packets":
+      return "Packets";
+    default:
+      return unit;
+  }
+}
+

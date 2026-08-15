@@ -5,7 +5,7 @@
 alter table public.items drop constraint if exists items_unit_check;
 alter table public.items
   add constraint items_unit_check
-  check (unit in ('pcs', 'bottle', 'kg', 'g', 'L', 'ml'));
+  check (unit in ('pcs', 'bottle', 'bags', 'packets', 'kg', 'g', 'L', 'ml'));
 
 -- 2) Category column
 alter table public.items

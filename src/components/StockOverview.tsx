@@ -4,6 +4,7 @@ import {
   STOCK_STATUS_LABEL,
   STOCK_STATUS_BADGE,
   formatQuantity,
+  unitCaption,
 } from "@/lib/stock";
 import type { Item, StockStatus } from "@/lib/types";
 
@@ -64,11 +65,7 @@ export default function StockOverview({ items }: { items: Item[] }) {
                       {item.name}
                     </p>
                     <p className="text-xs text-neutral-400">
-                      {item.unit === "pcs"
-                        ? "Pieces"
-                        : item.unit === "bottle"
-                          ? "Bottles"
-                          : item.unit}
+                      {unitCaption(item.unit)}
                     </p>
                   </div>
                   <p className="text-base font-semibold tabular-nums text-neutral-900">

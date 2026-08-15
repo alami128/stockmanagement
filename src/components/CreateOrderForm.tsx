@@ -8,6 +8,8 @@ import {
   STOCK_STATUS_BADGE,
   STOCK_STATUS_LABEL,
   formatQuantity,
+  unitCaption,
+  UNIT_LABEL,
 } from "@/lib/stock";
 import type { Item } from "@/lib/types";
 
@@ -73,12 +75,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
       {items.map((item) => {
         const line = lines[item.id];
         const status = getStockStatus(item);
-        const unitHint =
-          item.unit === "pcs"
-            ? "pcs"
-            : item.unit === "bottle"
-              ? "bottles"
-              : item.unit;
+        const unitHint = UNIT_LABEL[item.unit]?.plural ?? item.unit;
 
         return (
           <div
@@ -145,13 +142,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
                       type="number"
                       min="0"
                       step="any"
-                      placeholder={
-                        item.unit === "bottle"
-                          ? "e.g. 6 bottles"
-                          : item.unit === "pcs"
-                            ? "e.g. 24 pcs"
-                            : `Quantity (${item.unit})`
-                      }
+                      placeholder={`e.g. 6 ${unitHint}`}
                       value={line.quantity}
                       onChange={(e) =>
                         update(item.id, {

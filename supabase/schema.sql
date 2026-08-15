@@ -22,7 +22,7 @@ create table if not exists public.items (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   quantity numeric not null default 0 check (quantity >= 0),
-  unit text not null default 'pcs' check (unit in ('pcs', 'bottle', 'kg', 'g', 'L', 'ml')),
+  unit text not null default 'pcs' check (unit in ('pcs', 'bottle', 'bags', 'packets', 'kg', 'g', 'L', 'ml')),
   category text not null default 'other' check (category in (
     'vegetables', 'meat', 'seafood', 'dairy_eggs', 'fats_oils',
     'grains', 'herbs_spices', 'cleaning', 'other'

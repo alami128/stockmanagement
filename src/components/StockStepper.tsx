@@ -10,6 +10,7 @@ import {
   STOCK_STATUS_BAR,
   STOCK_STEP,
   formatQuantity,
+  unitCaption,
 } from "@/lib/stock";
 import type { Item } from "@/lib/types";
 
@@ -62,11 +63,7 @@ export default function StockStepper({ item }: { item: Item }) {
               {item.name}
             </p>
             <p className="text-xs text-neutral-400">
-              {item.unit === "pcs"
-                ? "Pieces"
-                : item.unit === "bottle"
-                  ? "Bottles"
-                  : item.unit}
+              {unitCaption(item.unit)}
             </p>
           </div>
         </div>

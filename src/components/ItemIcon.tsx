@@ -43,6 +43,7 @@ function resolveKind(name: string, unit: StockUnit): IconKind {
 
   if (unit === "pcs") return "pcs";
   if (unit === "bottle") return "bottle";
+  if (unit === "bags" || unit === "packets") return "bag";
   if (unit === "L" || unit === "ml") return "liquid";
   return "bag";
 }
@@ -189,7 +190,17 @@ export default function ItemIcon({
   return (
     <div
       className={`item-icon flex shrink-0 items-center justify-center rounded-full ${box} ${tone.wrap} ${tone.ink}`}
-      title={unit === "pcs" ? "Pieces" : unit === "bottle" ? "Bottle" : unit}
+      title={
+        unit === "pcs"
+          ? "Pieces"
+          : unit === "bottle"
+            ? "Bottle"
+            : unit === "bags"
+              ? "Bags"
+              : unit === "packets"
+                ? "Packets"
+                : unit
+      }
     >
       <div className={glyph}>
         <Glyph kind={kind} />

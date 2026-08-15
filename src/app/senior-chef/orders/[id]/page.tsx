@@ -5,7 +5,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import StatusBadge from "@/components/StatusBadge";
 import OrderStatusActions from "@/components/OrderStatusActions";
 import ItemIcon from "@/components/ItemIcon";
-import { formatQuantity } from "@/lib/stock";
+import { formatQuantity, unitCaption } from "@/lib/stock";
 import type { StockUnit } from "@/lib/types";
 
 export default async function OrderDetailPage({
@@ -75,11 +75,7 @@ export default async function OrderDetailPage({
                   <p className="text-sm text-neutral-500">{line.notes}</p>
                 ) : (
                   <p className="text-xs text-neutral-400">
-                    {unit === "pcs"
-                      ? "Pieces"
-                      : unit === "bottle"
-                        ? "Bottles"
-                        : unit}
+                    {unitCaption(unit)}
                   </p>
                 )}
               </div>
