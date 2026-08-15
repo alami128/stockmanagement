@@ -31,7 +31,7 @@ export default function StockStepper({ item }: { item: Item }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/80 bg-white/95 p-5 shadow-[0_1px_0_rgba(28,25,23,0.04)] backdrop-blur">
+    <div className="rounded-xl border border-neutral-200 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <ItemIcon
@@ -41,10 +41,10 @@ export default function StockStepper({ item }: { item: Item }) {
             size="md"
           />
           <div className="min-w-0">
-            <p className="truncate text-xl font-semibold text-stone-900">
+            <p className="truncate text-lg font-semibold text-neutral-900">
               {item.name}
             </p>
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-stone-400">
+            <p className="text-xs text-neutral-400">
               {item.unit === "pcs"
                 ? "Pieces"
                 : item.unit === "bottle"
@@ -54,13 +54,13 @@ export default function StockStepper({ item }: { item: Item }) {
           </div>
         </div>
         <span
-          className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${STOCK_STATUS_BADGE[status]}`}
+          className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-wide ${STOCK_STATUS_BADGE[status]}`}
         >
           {STOCK_STATUS_LABEL[status]}
         </span>
       </div>
 
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-stone-100">
+      <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-neutral-100">
         <div
           className={`h-full rounded-full transition-all ${STOCK_STATUS_BAR[status]}`}
           style={{
@@ -77,16 +77,16 @@ export default function StockStepper({ item }: { item: Item }) {
           onClick={() => commit(quantity - step)}
           disabled={isPending || quantity <= 0}
           aria-label={`Decrease ${item.name}`}
-          className="btn h-14 w-14 shrink-0 bg-stone-100 p-0 text-2xl font-bold text-stone-700 hover:bg-stone-200 disabled:opacity-40"
+          className="btn h-14 w-14 shrink-0 bg-neutral-100 p-0 text-2xl font-bold text-neutral-700 hover:bg-neutral-200 disabled:opacity-40"
         >
           −
         </button>
 
         <div className="text-center">
-          <p className="text-2xl font-bold tabular-nums text-stone-900">
+          <p className="text-2xl font-bold tabular-nums text-neutral-900">
             {formatQuantity(quantity, item.unit)}
           </p>
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-neutral-400">
             reorder below {formatQuantity(item.low_stock_threshold, item.unit)}
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function StockStepper({ item }: { item: Item }) {
           onClick={() => commit(quantity + step)}
           disabled={isPending}
           aria-label={`Increase ${item.name}`}
-          className="btn h-14 w-14 shrink-0 bg-stone-900 p-0 text-2xl font-bold text-white hover:bg-stone-800 disabled:opacity-40"
+          className="btn h-14 w-14 shrink-0 bg-neutral-900 p-0 text-2xl font-bold text-white hover:bg-neutral-800 disabled:opacity-40"
         >
           +
         </button>

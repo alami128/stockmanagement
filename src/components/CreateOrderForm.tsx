@@ -61,7 +61,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
 
   if (items.length === 0) {
     return (
-      <p className="rounded-3xl border border-dashed border-emerald-200 bg-emerald-50/60 px-5 py-10 text-center text-emerald-800">
+      <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-5 py-10 text-center text-neutral-500">
         Nothing needs ordering right now. Everything is stocked above its
         reorder point.
       </p>
@@ -70,7 +70,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
 
   return (
     <div className="space-y-3">
-      {items.map((item, index) => {
+      {items.map((item) => {
         const line = lines[item.id];
         const status = getStockStatus(item);
         const unitHint =
@@ -83,21 +83,20 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
         return (
           <div
             key={item.id}
-            className={`stock-row overflow-hidden rounded-2xl border bg-white/95 shadow-[0_1px_0_rgba(28,25,23,0.04)] backdrop-blur transition ${
+            className={`rounded-xl border bg-white transition ${
               line.selected
-                ? "border-orange-300 ring-2 ring-orange-100"
-                : "border-white/80"
+                ? "border-neutral-900"
+                : "border-neutral-200"
             }`}
-            style={{ animationDelay: `${index * 45}ms` }}
           >
-            <div className="flex items-start gap-4 p-4 sm:p-5">
+            <div className="flex items-start gap-4 p-4">
               <input
                 type="checkbox"
                 checked={line.selected}
                 onChange={(e) =>
                   update(item.id, { selected: e.target.checked })
                 }
-                className="mt-3 h-6 w-6 accent-orange-600"
+                className="mt-3 h-5 w-5 accent-neutral-900"
                 aria-label={`Select ${item.name}`}
               />
               <button
@@ -123,15 +122,15 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
                     }
                     className="text-left"
                   >
-                    <p className="font-display text-xl font-semibold tracking-tight text-stone-900">
+                    <p className="font-display text-xl font-semibold tracking-tight text-neutral-900">
                       {item.name}
                     </p>
-                    <p className="mt-0.5 text-sm text-stone-500">
+                    <p className="mt-0.5 text-sm text-neutral-500">
                       {formatQuantity(item.quantity, item.unit)} left
                     </p>
                   </button>
                   <span
-                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${STOCK_STATUS_BADGE[status]}`}
+                    className={`rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-wide ${STOCK_STATUS_BADGE[status]}`}
                   >
                     {STOCK_STATUS_LABEL[status]}
                   </span>
@@ -139,7 +138,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
 
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-stone-400">
+                    <label className="mb-1 block text-xs font-medium text-neutral-400">
                       Order qty ({unitHint})
                     </label>
                     <input
@@ -160,11 +159,11 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
                           selected: e.target.value !== "" || line.selected,
                         })
                       }
-                      className="w-full rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-lg text-stone-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                      className="w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-lg text-neutral-900 outline-none focus:border-neutral-400"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-stone-400">
+                    <label className="mb-1 block text-xs font-medium text-neutral-400">
                       Notes
                     </label>
                     <input
@@ -174,7 +173,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
                       onChange={(e) =>
                         update(item.id, { notes: e.target.value })
                       }
-                      className="w-full rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-lg text-stone-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                      className="w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-lg text-neutral-900 outline-none focus:border-neutral-400"
                     />
                   </div>
                 </div>
@@ -185,7 +184,7 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
       })}
 
       {error && (
-        <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+        <p className="rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
           {error}
         </p>
       )}
@@ -193,15 +192,13 @@ export default function CreateOrderForm({ items }: { items: Item[] }) {
       <button
         onClick={submit}
         disabled={isPending}
-        className="btn group relative w-full overflow-hidden bg-gradient-to-r from-orange-600 to-rose-500 text-white shadow-[0_16px_40px_-20px_rgba(234,88,12,0.9)] hover:from-orange-500 hover:to-rose-400 disabled:opacity-60"
+        className="btn w-full bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-60"
       >
-        <span className="relative z-10">
-          {isPending
-            ? "Creating order..."
-            : selectedCount > 0
-              ? `Create order · ${selectedCount} item${selectedCount === 1 ? "" : "s"}`
-              : "Create order"}
-        </span>
+        {isPending
+          ? "Creating order..."
+          : selectedCount > 0
+            ? `Create order · ${selectedCount} item${selectedCount === 1 ? "" : "s"}`
+            : "Create order"}
       </button>
     </div>
   );

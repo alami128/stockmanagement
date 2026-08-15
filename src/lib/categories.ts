@@ -22,17 +22,6 @@ export const CATEGORY_LABEL: Record<ItemCategory, string> = {
   other: "Other",
 };
 
-export const CATEGORY_ACCENT: Record<ItemCategory, string> = {
-  vegetables: "from-emerald-500 to-lime-400",
-  meat: "from-rose-500 to-orange-400",
-  seafood: "from-sky-500 to-cyan-400",
-  dairy_eggs: "from-amber-400 to-yellow-300",
-  fats_oils: "from-yellow-500 to-amber-300",
-  grains: "from-orange-400 to-amber-200",
-  herbs_spices: "from-teal-500 to-emerald-300",
-  other: "from-stone-400 to-stone-300",
-};
-
 export function isItemCategory(value: string): value is ItemCategory {
   return (ITEM_CATEGORIES as string[]).includes(value);
 }

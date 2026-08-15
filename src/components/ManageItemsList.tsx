@@ -16,7 +16,7 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
   return (
     <div className="space-y-2">
       {items.map((item) => (
-        <div key={item.id} className="rounded-2xl bg-white p-4 shadow-sm">
+        <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4">
           <div className="flex items-center justify-between gap-3">
             {editingId === item.id ? (
               <input
@@ -154,7 +154,7 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
         </div>
       ))}
       {items.length === 0 && (
-        <p className="rounded-2xl bg-white p-4 text-gray-500 shadow-sm">
+        <p className="rounded-xl border border-dashed border-neutral-300 bg-white p-4 text-neutral-500">
           No items yet.
         </p>
       )}

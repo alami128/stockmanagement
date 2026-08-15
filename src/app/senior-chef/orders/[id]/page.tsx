@@ -29,18 +29,13 @@ export default async function OrderDetailPage({
     .eq("order_id", params.id);
 
   return (
-    <main className="kitchen-shell relative mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 overflow-hidden">
-        <div className="absolute -left-10 top-4 h-48 w-48 rounded-full bg-teal-200/35 blur-3xl" />
-        <div className="absolute right-4 top-0 h-52 w-52 rounded-full bg-orange-200/35 blur-3xl" />
-      </div>
-
+    <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
       <div className="mb-5">
         <Link
           href="/senior-chef"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-500 transition hover:text-stone-800"
+          className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
         >
-          <span aria-hidden>&larr;</span> Back to stock overview
+          &larr; Back to stock overview
         </Link>
       </div>
 
@@ -52,21 +47,19 @@ export default async function OrderDetailPage({
         }`}
       />
 
-      <div className="mb-5 flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 p-5 shadow-sm backdrop-blur">
-        <span className="text-sm font-semibold uppercase tracking-[0.14em] text-stone-400">
-          Status
-        </span>
+      <div className="mb-4 flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-4">
+        <span className="text-sm text-neutral-500">Status</span>
         <StatusBadge status={order.status} />
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/80 bg-white/95 shadow-sm backdrop-blur">
+      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
         {lines?.map((line: any, index: number) => {
           const unit = (line.items?.unit || "pcs") as StockUnit;
           return (
             <div
               key={line.id}
-              className={`flex items-center gap-4 px-4 py-4 sm:px-5 ${
-                index > 0 ? "border-t border-stone-100" : ""
+              className={`flex items-center gap-3 px-4 py-3.5 ${
+                index > 0 ? "border-t border-neutral-100" : ""
               }`}
             >
               <ItemIcon
@@ -75,13 +68,13 @@ export default async function OrderDetailPage({
                 size="md"
               />
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-stone-900">
+                <p className="font-medium text-neutral-900">
                   {line.items?.name}
                 </p>
                 {line.notes ? (
-                  <p className="text-sm text-stone-500">{line.notes}</p>
+                  <p className="text-sm text-neutral-500">{line.notes}</p>
                 ) : (
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-stone-400">
+                  <p className="text-xs text-neutral-400">
                     {unit === "pcs"
                       ? "Pieces"
                       : unit === "bottle"
@@ -90,14 +83,14 @@ export default async function OrderDetailPage({
                   </p>
                 )}
               </div>
-              <span className="text-lg font-bold tabular-nums text-stone-800">
+              <span className="text-base font-semibold tabular-nums text-neutral-800">
                 {formatQuantity(line.quantity, unit)}
               </span>
             </div>
           );
         })}
         {(!lines || lines.length === 0) && (
-          <p className="px-5 py-6 text-stone-500">No line items.</p>
+          <p className="px-4 py-5 text-neutral-500">No line items.</p>
         )}
       </div>
 

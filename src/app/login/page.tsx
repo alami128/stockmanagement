@@ -11,7 +11,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="btn w-full bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+      className="btn w-full bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-60"
     >
       {pending ? "Signing in..." : "Log in"}
     </button>
@@ -23,7 +23,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8">
         <h1 className="mb-1 text-2xl font-bold text-gray-900">
           Kitchen Ordering
         </h1>

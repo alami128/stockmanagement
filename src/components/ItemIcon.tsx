@@ -14,21 +14,18 @@ type IconKind =
   | "bag"
   | "liquid";
 
-const STATUS_TONE: Record<
-  StockStatus,
-  { wrap: string; ink: string }
-> = {
+const STATUS_TONE: Record<StockStatus, { wrap: string; ink: string }> = {
   needs_order: {
-    wrap: "bg-rose-50 ring-rose-100",
-    ink: "text-rose-600",
+    wrap: "bg-neutral-100",
+    ink: "text-neutral-800",
   },
   low: {
-    wrap: "bg-amber-50 ring-amber-100",
-    ink: "text-amber-700",
+    wrap: "bg-neutral-100",
+    ink: "text-neutral-600",
   },
   available: {
-    wrap: "bg-emerald-50 ring-emerald-100",
-    ink: "text-emerald-700",
+    wrap: "bg-neutral-100",
+    ink: "text-neutral-500",
   },
 };
 
@@ -182,7 +179,7 @@ export default function ItemIcon({
 
   return (
     <div
-      className={`item-icon flex shrink-0 items-center justify-center rounded-2xl ring-1 ${box} ${tone.wrap} ${tone.ink}`}
+      className={`item-icon flex shrink-0 items-center justify-center rounded-xl ${box} ${tone.wrap} ${tone.ink}`}
       title={unit === "pcs" ? "Pieces" : unit === "bottle" ? "Bottle" : unit}
     >
       <div className={glyph}>

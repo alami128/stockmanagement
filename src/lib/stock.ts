@@ -14,15 +14,15 @@ export const STOCK_STATUS_LABEL: Record<StockStatus, string> = {
 
 // Tailwind-safe static class strings (no dynamic interpolation)
 export const STOCK_STATUS_BADGE: Record<StockStatus, string> = {
-  available: "bg-emerald-100 text-emerald-700",
-  low: "bg-amber-100 text-amber-700",
-  needs_order: "bg-rose-100 text-rose-700",
+  available: "bg-neutral-100 text-neutral-600",
+  low: "bg-neutral-100 text-neutral-700",
+  needs_order: "bg-neutral-900 text-white",
 };
 
 export const STOCK_STATUS_BAR: Record<StockStatus, string> = {
-  available: "bg-available",
-  low: "bg-amber-500",
-  needs_order: "bg-unavailable",
+  available: "bg-neutral-400",
+  low: "bg-neutral-600",
+  needs_order: "bg-neutral-900",
 };
 
 // How much to add/remove per tap of the increment buttons, per unit.

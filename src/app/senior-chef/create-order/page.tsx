@@ -18,18 +18,13 @@ export default async function CreateOrderPage() {
     });
 
   return (
-    <main className="kitchen-shell relative mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 overflow-hidden">
-        <div className="absolute left-1/4 top-0 h-52 w-52 rounded-full bg-orange-200/45 blur-3xl" />
-        <div className="absolute right-0 top-10 h-48 w-48 rounded-full bg-rose-200/30 blur-3xl" />
-      </div>
-
+    <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
       <div className="mb-5">
         <Link
           href="/senior-chef"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-500 transition hover:text-stone-800"
+          className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
         >
-          <span aria-hidden>&larr;</span> Back to stock overview
+          &larr; Back to stock overview
         </Link>
       </div>
 

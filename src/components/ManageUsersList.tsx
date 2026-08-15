@@ -14,7 +14,7 @@ export default function ManageUsersList({ users }: { users: AppUser[] }) {
       {users.map((u) => (
         <div
           key={u.id}
-          className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
             <p className="font-semibold text-gray-900">{u.name}</p>
@@ -48,7 +48,7 @@ export default function ManageUsersList({ users }: { users: AppUser[] }) {
         </div>
       ))}
       {users.length === 0 && (
-        <p className="rounded-2xl bg-white p-4 text-gray-500 shadow-sm">
+        <p className="rounded-xl border border-dashed border-neutral-300 bg-white p-4 text-neutral-500">
           No users yet.
         </p>
       )}

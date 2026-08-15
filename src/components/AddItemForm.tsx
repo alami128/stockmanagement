@@ -28,7 +28,7 @@ export default function AddItemForm() {
         await addItem(formData);
         formRef.current?.reset();
       }}
-      className="grid grid-cols-2 gap-3 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-4"
+      className="grid grid-cols-2 gap-3 rounded-xl border border-neutral-200 bg-white p-5 sm:grid-cols-4"
     >
       <input
         name="name"
