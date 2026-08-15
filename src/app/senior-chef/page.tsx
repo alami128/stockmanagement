@@ -19,7 +19,7 @@ export default async function SeniorChefPage() {
   ]);
 
   const items = (itemData || []) as Item[];
-  const attention = items.filter((i) => getStockStatus(i) !== "available").length;
+  const available = items.filter((i) => getStockStatus(i) === "available").length;
   const out = items.filter((i) => getStockStatus(i) === "needs_order").length;
   const low = items.filter((i) => getStockStatus(i) === "low").length;
 
@@ -28,47 +28,28 @@ export default async function SeniorChefPage() {
       <DashboardHeader
         eyebrow="Senior Chef"
         title="Kitchen Stock"
-        subtitle="A live look at what's on hand — order what the line needs."
+        subtitle="A live look at what's on hand."
       />
 
-      <div className="mb-6 grid grid-cols-3 gap-2">
-        <div className="rounded-xl border border-neutral-200 bg-white p-3.5">
-          <p className="text-xs text-neutral-400">Attention</p>
-          <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-neutral-900">
-            {attention}
-          </p>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-3.5">
-          <p className="text-xs text-neutral-400">Out</p>
-          <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-neutral-900">
+      <div className="mb-8 grid grid-cols-3 gap-2">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3.5">
+          <p className="text-xs font-medium text-red-600">Out</p>
+          <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-red-700">
             {out}
           </p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-3.5">
-          <p className="text-xs text-neutral-400">Low</p>
-          <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-neutral-900">
+        <div className="rounded-xl border border-orange-200 bg-orange-50 p-3.5">
+          <p className="text-xs font-medium text-orange-600">Low</p>
+          <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-orange-700">
             {low}
           </p>
         </div>
-      </div>
-
-      <div className="mb-8">
-        <Link
-          href="/senior-chef/create-order"
-          className="btn flex w-full items-center justify-center gap-2 bg-neutral-900 text-white hover:bg-neutral-800"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-          >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Create Order
-        </Link>
+        <div className="rounded-xl border border-green-200 bg-green-50 p-3.5">
+          <p className="text-xs font-medium text-green-600">Available</p>
+          <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-green-700">
+            {available}
+          </p>
+        </div>
       </div>
 
       <StockOverview items={items} />

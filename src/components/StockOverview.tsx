@@ -2,6 +2,9 @@ import ItemIcon from "@/components/ItemIcon";
 import {
   getStockStatus,
   STOCK_STATUS_LABEL,
+  STOCK_STATUS_TEXT,
+  STOCK_STATUS_DOT,
+  STOCK_STATUS_BORDER,
   formatQuantity,
 } from "@/lib/stock";
 import type { Item, StockStatus } from "@/lib/types";
@@ -36,7 +39,12 @@ export default function StockOverview({ items }: { items: Item[] }) {
         return (
           <section key={status}>
             <div className="mb-3 flex items-baseline justify-between gap-3">
-              <h2 className="font-display text-lg font-semibold text-neutral-900">
+              <h2
+                className={`flex items-center gap-2 font-display text-lg font-semibold ${STOCK_STATUS_TEXT[status]}`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${STOCK_STATUS_DOT[status]}`}
+                />
                 {STOCK_STATUS_LABEL[status]}
               </h2>
               <span className="text-sm text-neutral-400">
@@ -44,7 +52,9 @@ export default function StockOverview({ items }: { items: Item[] }) {
               </span>
             </div>
 
-            <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-neutral-200 bg-white">
+            <ul
+              className={`divide-y divide-neutral-100 overflow-hidden rounded-xl border bg-white ${STOCK_STATUS_BORDER[status]}`}
+            >
               {sectionItems.map((item) => (
                 <li
                   key={item.id}
@@ -68,7 +78,9 @@ export default function StockOverview({ items }: { items: Item[] }) {
                           : item.unit}
                     </p>
                   </div>
-                  <p className="text-base font-semibold tabular-nums text-neutral-800">
+                  <p
+                    className={`text-base font-semibold tabular-nums ${STOCK_STATUS_TEXT[status]}`}
+                  >
                     {formatQuantity(item.quantity, item.unit)}
                   </p>
                 </li>
