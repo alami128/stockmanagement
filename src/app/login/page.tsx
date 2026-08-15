@@ -6,7 +6,7 @@ import { login, type LoginState } from "@/lib/actions/auth";
 
 const initialState: LoginState = { error: null };
 
-type PersonaId = "head_chef" | "chef" | "kps";
+type PersonaId = "head_chef" | "chef" | "kps" | "admin";
 
 interface Persona {
   id: PersonaId;
@@ -35,8 +35,15 @@ const PERSONAS: Persona[] = [
     id: "kps",
     label: "Kps",
     subtitle: "Update the cleaning products stock",
-    email: "admin@example.com",
+    email: "",
     accent: "border-red-500 hover:bg-red-50",
+  },
+  {
+    id: "admin",
+    label: "Admin",
+    subtitle: "Manage orders and staff",
+    email: "admin@example.com",
+    accent: "border-neutral-900 hover:bg-neutral-50",
   },
 ];
 
@@ -114,6 +121,7 @@ export default function LoginPage() {
                   required
                   defaultValue={persona.email}
                   autoComplete="email"
+                  autoFocus={!persona.email}
                   className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-lg outline-none focus:border-neutral-400"
                 />
               </div>
@@ -126,7 +134,7 @@ export default function LoginPage() {
                   name="password"
                   required
                   autoComplete="current-password"
-                  autoFocus
+                  autoFocus={Boolean(persona.email)}
                   className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-lg outline-none focus:border-neutral-400"
                 />
               </div>
