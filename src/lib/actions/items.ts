@@ -1,11 +1,38 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { guessCategory, isItemCategory } from "@/lib/categories";
-import type { ItemCategory, StockUnit } from "@/lib/types";
+import type { ItemCategory, Role, StockUnit } from "@/lib/types";
 
 export type ActionResult = { error: string | null };
+
+const CAN_MANAGE_ITEMS: Role[] = ["chef", "admin"];
+
+async function requireItemManager() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." as const, user: null, role: null };
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const role = profile?.role as Role | undefined;
+  if (!role || !CAN_MANAGE_ITEMS.includes(role)) {
+    return {
+      error: "Only chefs and admins can add or manage items." as const,
+      user: null,
+      role: null,
+    };
+  }
+
+  return { error: null, user, role };
+}
 
 export async function setItemQuantity(itemId: string, quantity: number) {
   const safeQuantity = Math.max(0, quantity);
@@ -45,11 +72,8 @@ export async function addItem(formData: FormData): Promise<ActionResult> {
   const quantity = parseFloat(String(formData.get("quantity") || "0"));
   if (!name) return { error: "Name is required." };
 
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Not signed in." };
+  const auth = await requireItemManager();
+  if (auth.error || !auth.user) return { error: auth.error || "Not signed in." };
 
   const base = {
     name,
@@ -57,12 +81,14 @@ export async function addItem(formData: FormData): Promise<ActionResult> {
     low_stock_threshold: Number.isFinite(lowStockThreshold)
       ? Math.max(0, lowStockThreshold)
       : 5,
-    updated_by: user.id,
+    updated_by: auth.user.id,
   };
 
-  // Prefer the full schema (category + bottle). If the live database
-  // hasn't been migrated yet, fall back so adding items still works.
-  let { error } = await supabase.from("items").insert({
+  // Insert with the service role after we've verified the caller is a
+  // chef/admin. Avoids brittle RLS/current_role failures on insert.
+  const admin = createAdminClient();
+
+  let { error } = await admin.from("items").insert({
     ...base,
     unit,
     category,
@@ -78,7 +104,7 @@ export async function addItem(formData: FormData): Promise<ActionResult> {
 
     if (schemaGap) {
       const legacyUnit = unit === "bottle" ? "L" : unit;
-      ({ error } = await supabase.from("items").insert({
+      ({ error } = await admin.from("items").insert({
         ...base,
         unit: legacyUnit,
       }));
@@ -104,8 +130,12 @@ export async function renameItem(itemId: string, name: string) {
   const trimmed = name.trim();
   if (!trimmed) return;
 
-  const supabase = createClient();
-  const { error } = await supabase
+  const auth = await requireItemManager();
+  if (auth.error || !auth.user) throw new Error(auth.error || "Not signed in");
+  if (auth.role !== "admin") throw new Error("Admin access required");
+
+  const admin = createAdminClient();
+  const { error } = await admin
     .from("items")
     .update({ name: trimmed })
     .eq("id", itemId);
@@ -123,7 +153,11 @@ export async function updateItemSettings(
   lowStockThreshold: number,
   category?: ItemCategory
 ) {
-  const supabase = createClient();
+  const auth = await requireItemManager();
+  if (auth.error || !auth.user) throw new Error(auth.error || "Not signed in");
+  if (auth.role !== "admin") throw new Error("Admin access required");
+
+  const admin = createAdminClient();
   const patch: {
     unit: StockUnit;
     low_stock_threshold: number;
@@ -136,9 +170,8 @@ export async function updateItemSettings(
     patch.category = category;
   }
 
-  let { error } = await supabase.from("items").update(patch).eq("id", itemId);
+  let { error } = await admin.from("items").update(patch).eq("id", itemId);
 
-  // Legacy DB without category / bottle: update unit + threshold only.
   if (error) {
     const msg = error.message.toLowerCase();
     if (
@@ -146,7 +179,7 @@ export async function updateItemSettings(
       msg.includes("bottle") ||
       msg.includes("schema cache")
     ) {
-      ({ error } = await supabase
+      ({ error } = await admin
         .from("items")
         .update({
           unit: unit === "bottle" ? "L" : unit,
@@ -164,8 +197,12 @@ export async function updateItemSettings(
 }
 
 export async function removeItem(itemId: string) {
-  const supabase = createClient();
-  const { error } = await supabase.from("items").delete().eq("id", itemId);
+  const auth = await requireItemManager();
+  if (auth.error || !auth.user) throw new Error(auth.error || "Not signed in");
+  if (auth.role !== "admin") throw new Error("Admin access required");
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("items").delete().eq("id", itemId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin");

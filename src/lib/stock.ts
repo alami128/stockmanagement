@@ -15,9 +15,9 @@ export const STOCK_STATUS_LABEL: Record<StockStatus, string> = {
 // Tailwind-safe static class strings (no dynamic interpolation)
 // Outline “stroke” pills for status titles — items stay black & white.
 export const STOCK_STATUS_BADGE: Record<StockStatus, string> = {
-  available: "border border-green-500 bg-white text-green-700",
-  low: "border border-orange-500 bg-white text-orange-700",
-  needs_order: "border border-red-500 bg-white text-red-700",
+  available: "border-2 border-green-500 bg-white text-green-700",
+  low: "border-2 border-yellow-500 bg-white text-yellow-700",
+  needs_order: "border-2 border-red-500 bg-white text-red-700",
 };
 
 export const STOCK_STATUS_BAR: Record<StockStatus, string> = {
@@ -28,13 +28,13 @@ export const STOCK_STATUS_BAR: Record<StockStatus, string> = {
 
 export const STOCK_STATUS_TEXT: Record<StockStatus, string> = {
   available: "text-green-700",
-  low: "text-orange-700",
+  low: "text-yellow-700",
   needs_order: "text-red-700",
 };
 
 export const STOCK_STATUS_BORDER: Record<StockStatus, string> = {
   available: "border-green-500",
-  low: "border-orange-500",
+  low: "border-yellow-500",
   needs_order: "border-red-500",
 };
 

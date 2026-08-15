@@ -32,19 +32,19 @@ export default async function SeniorChefPage() {
       />
 
       <div className="mb-8 grid grid-cols-3 gap-2">
-        <div className="rounded-xl border border-red-500 bg-white p-3.5">
+        <div className="rounded-xl border-2 border-red-500 bg-white p-3.5">
           <p className="text-xs font-medium text-red-600">Out of Stock</p>
           <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-neutral-900">
             {out}
           </p>
         </div>
-        <div className="rounded-xl border border-orange-500 bg-white p-3.5">
-          <p className="text-xs font-medium text-orange-600">Running Low</p>
+        <div className="rounded-xl border-2 border-yellow-500 bg-white p-3.5">
+          <p className="text-xs font-medium text-yellow-700">Running Low</p>
           <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-neutral-900">
             {low}
           </p>
         </div>
-        <div className="rounded-xl border border-green-500 bg-white p-3.5">
+        <div className="rounded-xl border-2 border-green-500 bg-white p-3.5">
           <p className="text-xs font-medium text-green-600">Available</p>
           <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-neutral-900">
             {available}

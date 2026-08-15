@@ -179,7 +179,7 @@ export default function ItemIcon({
 
   return (
     <div
-      className={`item-icon flex shrink-0 items-center justify-center rounded-xl ${box} ${tone.wrap} ${tone.ink}`}
+      className={`item-icon flex shrink-0 items-center justify-center rounded-full ${box} ${tone.wrap} ${tone.ink}`}
       title={unit === "pcs" ? "Pieces" : unit === "bottle" ? "Bottle" : unit}
     >
       <div className={glyph}>

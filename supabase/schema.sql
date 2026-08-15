@@ -118,7 +118,7 @@ create policy "users_update_self_or_admin" on public.users
   for update using (auth.uid() = id or public.current_role() = 'admin');
 
 -- items: any signed-in user can view; chefs and admins can update
--- availability; only admins can add/rename/remove items.
+-- availability and add items; only admins can rename/remove items.
 drop policy if exists "items_select" on public.items;
 create policy "items_select" on public.items
   for select using (auth.role() = 'authenticated');
