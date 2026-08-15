@@ -152,10 +152,14 @@ export async function updateItemSettings(
   unit: StockUnit,
   lowStockThreshold: number,
   category?: ItemCategory
-) {
+): Promise<ActionResult> {
   const auth = await requireItemManager();
-  if (auth.error || !auth.user) throw new Error(auth.error || "Not signed in");
-  if (auth.role !== "admin") throw new Error("Admin access required");
+  if (auth.error || !auth.user) {
+    return { error: auth.error || "Not signed in." };
+  }
+  if (auth.role !== "admin") {
+    return { error: "Admin access required." };
+  }
 
   const admin = createAdminClient();
   const patch: {
@@ -170,30 +174,32 @@ export async function updateItemSettings(
     patch.category = category;
   }
 
-  let { error } = await admin.from("items").update(patch).eq("id", itemId);
+  const { error } = await admin.from("items").update(patch).eq("id", itemId);
 
   if (error) {
     const msg = error.message.toLowerCase();
-    if (
+    const schemaGap =
+      msg.includes("check constraint") ||
+      msg.includes("items_unit_check") ||
       msg.includes("category") ||
       msg.includes("bottle") ||
-      msg.includes("schema cache")
-    ) {
-      ({ error } = await admin
-        .from("items")
-        .update({
-          unit: unit === "bottle" ? "L" : unit,
-          low_stock_threshold: Math.max(0, lowStockThreshold),
-        })
-        .eq("id", itemId));
-    }
-  }
+      msg.includes("bags") ||
+      msg.includes("packets") ||
+      msg.includes("boxes") ||
+      msg.includes("schema cache") ||
+      msg.includes("invalid input");
 
-  if (error) throw new Error(error.message);
+    return {
+      error: schemaGap
+        ? "Your database doesn’t allow “boxes” yet. In Supabase → SQL Editor, run: alter table public.items drop constraint if exists items_unit_check; alter table public.items add constraint items_unit_check check (unit in ('pcs', 'bottle', 'bags', 'packets', 'boxes', 'kg', 'g', 'L', 'ml'));"
+        : error.message,
+    };
+  }
 
   revalidatePath("/admin");
   revalidatePath("/chef");
   revalidatePath("/senior-chef");
+  return { error: null };
 }
 
 export async function removeItem(itemId: string) {

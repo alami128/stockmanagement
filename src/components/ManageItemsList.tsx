@@ -22,9 +22,33 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  function saveSettings(
+    itemId: string,
+    unit: StockUnit,
+    lowStockThreshold: number,
+    category?: ItemCategory
+  ) {
+    setError(null);
+    startTransition(async () => {
+      const result = await updateItemSettings(
+        itemId,
+        unit,
+        lowStockThreshold,
+        category
+      );
+      if (result.error) setError(result.error);
+    });
+  }
 
   return (
     <div className="space-y-2">
+      {error && (
+        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
       {items.map((item) => (
         <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4">
           <div className="flex items-center justify-between gap-3">
@@ -93,13 +117,11 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
                 defaultValue={item.category || "other"}
                 disabled={isPending}
                 onChange={(e) =>
-                  startTransition(() =>
-                    updateItemSettings(
-                      item.id,
-                      item.unit,
-                      item.low_stock_threshold,
-                      e.target.value as ItemCategory
-                    )
+                  saveSettings(
+                    item.id,
+                    item.unit,
+                    item.low_stock_threshold,
+                    e.target.value as ItemCategory
                   )
                 }
                 className="rounded-lg border border-gray-300 px-2 py-1"
@@ -117,13 +139,11 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
                 defaultValue={item.unit}
                 disabled={isPending}
                 onChange={(e) =>
-                  startTransition(() =>
-                    updateItemSettings(
-                      item.id,
-                      e.target.value as StockUnit,
-                      item.low_stock_threshold,
-                      item.category
-                    )
+                  saveSettings(
+                    item.id,
+                    e.target.value as StockUnit,
+                    item.low_stock_threshold,
+                    item.category
                   )
                 }
                 className="rounded-lg border border-gray-300 px-2 py-1"
@@ -146,14 +166,7 @@ export default function ManageItemsList({ items }: { items: Item[] }) {
                 onBlur={(e) => {
                   const val = parseFloat(e.target.value);
                   if (Number.isFinite(val)) {
-                    startTransition(() =>
-                      updateItemSettings(
-                        item.id,
-                        item.unit,
-                        val,
-                        item.category
-                      )
-                    );
+                    saveSettings(item.id, item.unit, val, item.category);
                   }
                 }}
                 className="w-20 rounded-lg border border-gray-300 px-2 py-1"

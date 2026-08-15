@@ -63,11 +63,12 @@ export const UNIT_LABEL: Record<StockUnit, { singular: string; plural: string }>
   ml: { singular: "ml", plural: "ml" },
 };
 
-export function formatQuantity(quantity: number, unit: StockUnit): string {
+export function formatQuantity(quantity: number, unit: StockUnit | string): string {
   const trimmed = Number.isInteger(quantity)
     ? quantity.toString()
     : quantity.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-  const labels = UNIT_LABEL[unit] ?? { singular: unit, plural: unit };
+  const labels =
+    UNIT_LABEL[unit as StockUnit] ?? { singular: unit, plural: unit };
   const label = quantity === 1 ? labels.singular : labels.plural;
   return `${trimmed} ${label}`;
 }
