@@ -1,4 +1,10 @@
 import type { StockStatus, StockUnit } from "@/lib/types";
+import {
+  resolveVegetableSprite,
+  spriteBackgroundPosition,
+  VEG_SPRITE_SIZE,
+  VEG_SPRITE_URL,
+} from "@/lib/vegetableIcons";
 
 type IconKind =
   | "pcs"
@@ -87,7 +93,15 @@ function Glyph({ kind }: { kind: IconKind }) {
       return (
         <svg {...common}>
           <ellipse cx="24" cy="26" rx="10" ry="13" />
-          <ellipse cx="21" cy="22" rx="2.5" ry="3.5" opacity="0.35" fill="currentColor" stroke="none" />
+          <ellipse
+            cx="21"
+            cy="22"
+            rx="2.5"
+            ry="3.5"
+            opacity="0.35"
+            fill="currentColor"
+            stroke="none"
+          />
         </svg>
       );
     case "milk":
@@ -160,6 +174,31 @@ function Glyph({ kind }: { kind: IconKind }) {
   }
 }
 
+function VegetableSprite({
+  name,
+  sizeClass,
+}: {
+  name: string;
+  sizeClass: string;
+}) {
+  const sprite = resolveVegetableSprite(name);
+  if (!sprite) return null;
+
+  return (
+    <span
+      className={`block ${sizeClass} rounded-full`}
+      style={{
+        backgroundImage: `url(${VEG_SPRITE_URL})`,
+        backgroundSize: VEG_SPRITE_SIZE,
+        backgroundPosition: spriteBackgroundPosition(sprite),
+        backgroundRepeat: "no-repeat",
+      }}
+      role="img"
+      aria-label={name}
+    />
+  );
+}
+
 export default function ItemIcon({
   name,
   unit,
@@ -171,20 +210,38 @@ export default function ItemIcon({
   status?: StockStatus;
   size?: "sm" | "md" | "lg";
 }) {
+  const veg = resolveVegetableSprite(name);
   const kind = resolveKind(name, unit);
   const tone = STATUS_TONE[status];
   const box =
     size === "lg" ? "h-14 w-14" : size === "sm" ? "h-10 w-10" : "h-12 w-12";
-  const glyph = size === "lg" ? "h-8 w-8" : size === "sm" ? "h-5 w-5" : "h-6 w-6";
+  const glyph =
+    size === "lg" ? "h-10 w-10" : size === "sm" ? "h-7 w-7" : "h-8 w-8";
+  const svgGlyph =
+    size === "lg" ? "h-8 w-8" : size === "sm" ? "h-5 w-5" : "h-6 w-6";
 
   return (
     <div
-      className={`item-icon flex shrink-0 items-center justify-center rounded-full ${box} ${tone.wrap} ${tone.ink}`}
+      className={`item-icon flex shrink-0 items-center justify-center overflow-hidden rounded-full ${box} ${
+        veg ? "bg-white ring-2 ring-inset" : `${tone.wrap} ${tone.ink}`
+      } ${
+        veg
+          ? status === "needs_order"
+            ? "ring-red-500"
+            : status === "low"
+              ? "ring-yellow-400"
+              : "ring-green-500"
+          : ""
+      }`}
       title={unit === "pcs" ? "Pieces" : unit === "bottle" ? "Bottle" : unit}
     >
-      <div className={glyph}>
-        <Glyph kind={kind} />
-      </div>
+      {veg ? (
+        <VegetableSprite name={name} sizeClass={glyph} />
+      ) : (
+        <div className={svgGlyph}>
+          <Glyph kind={kind} />
+        </div>
+      )}
     </div>
   );
 }

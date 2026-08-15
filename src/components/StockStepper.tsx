@@ -122,11 +122,11 @@ export default function StockStepper({ item }: { item: Item }) {
             disabled={isPending}
             aria-label={`Delete ${item.name}`}
             title="Delete item"
-            className="btn h-14 w-14 shrink-0 border-2 border-red-500 bg-white p-0 text-red-600 hover:bg-red-50 disabled:opacity-40"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-red-500/40 bg-white text-red-600/45 transition-opacity hover:border-red-500/70 hover:bg-red-50 hover:text-red-600/70 active:opacity-80 disabled:opacity-30"
           >
             <svg
               viewBox="0 0 24 24"
-              className="mx-auto h-6 w-6"
+              className="h-6 w-6"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
