@@ -14,8 +14,7 @@ interface Persona {
   subtitle: string;
   email: string;
   ring: string;
-  /** Horizontal position in the 3-wide avatar sheet (0=left, 1=middle, 2=right). */
-  sheetIndex: number;
+  avatarSrc: string;
 }
 
 const PERSONAS: Persona[] = [
@@ -25,7 +24,7 @@ const PERSONAS: Persona[] = [
     subtitle: "Update kitchen stock",
     email: "chef@example.com",
     ring: "ring-blue-500",
-    sheetIndex: 0,
+    avatarSrc: "/avatars/chef.png",
   },
   {
     id: "head_chef",
@@ -33,7 +32,7 @@ const PERSONAS: Persona[] = [
     subtitle: "Stock overview & orders",
     email: "seniorchef@example.com",
     ring: "ring-green-500",
-    sheetIndex: 1,
+    avatarSrc: "/avatars/head-chef.png",
   },
   {
     id: "kps",
@@ -41,7 +40,7 @@ const PERSONAS: Persona[] = [
     subtitle: "Admin & settings",
     email: "admin@example.com",
     ring: "ring-red-500",
-    sheetIndex: 2,
+    avatarSrc: "/avatars/kps.png",
   },
 ];
 
@@ -59,29 +58,27 @@ function SubmitButton() {
 }
 
 function RoleAvatar({
-  sheetIndex,
+  src,
   label,
   className = "",
 }: {
-  sheetIndex: number;
+  src: string;
   label: string;
   className?: string;
 }) {
-  // Sheet is 3 equal columns; position uses the (n-1) formula for background-position.
-  const x = `${(sheetIndex / 2) * 100}%`;
-
   return (
     <span
-      className={`block overflow-hidden rounded-full bg-white ${className}`}
-      style={{
-        backgroundImage: "url(/avatars/roles.png)",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "300% 100%",
-        backgroundPosition: `${x} 50%`,
-      }}
-      role="img"
-      aria-label={label}
-    />
+      className={`block overflow-hidden rounded-full bg-black ${className}`}
+    >
+      <img
+        src={src}
+        alt={label}
+        width={150}
+        height={150}
+        className="h-full w-full scale-110 object-cover"
+        draggable={false}
+      />
+    </span>
   );
 }
 
@@ -112,9 +109,9 @@ export default function LoginPage() {
                   className={`rounded-full ring-2 ring-offset-2 ring-offset-white transition group-hover:ring-4 ${p.ring}`}
                 >
                   <RoleAvatar
-                    sheetIndex={p.sheetIndex}
+                    src={p.avatarSrc}
                     label={p.label}
-                    className="h-20 w-20 sm:h-24 sm:w-24"
+                    className="h-24 w-24 sm:h-28 sm:w-28"
                   />
                 </span>
                 <span className="text-center">
@@ -135,9 +132,9 @@ export default function LoginPage() {
                 className={`rounded-full ring-2 ring-offset-2 ring-offset-white ${persona.ring}`}
               >
                 <RoleAvatar
-                  sheetIndex={persona.sheetIndex}
+                  src={persona.avatarSrc}
                   label={persona.label}
-                  className="h-16 w-16"
+                  className="h-20 w-20"
                 />
               </span>
               <div className="min-w-0 flex-1">
