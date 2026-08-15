@@ -132,7 +132,15 @@ async function seedUsers() {
       .maybeSingle();
 
     if (existing) {
-      console.log(`Skipping ${u.email} (already exists)`);
+      const { error } = await supabase.auth.admin.updateUserById(existing.id, {
+        password: DEMO_PASSWORD,
+        email_confirm: true,
+      });
+      if (error) {
+        console.error(`Failed to reset ${u.email}:`, error.message);
+      } else {
+        console.log(`Reset password for ${u.email} / ${DEMO_PASSWORD}`);
+      }
       continue;
     }
 

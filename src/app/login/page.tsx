@@ -40,7 +40,7 @@ const PERSONAS: Persona[] = [
   },
   {
     id: "admin",
-    label: "Admin",
+    label: "Other",
     subtitle: "Manage orders and staff",
     email: "admin@example.com",
     accent: "border-neutral-900 hover:bg-neutral-50",
