@@ -199,11 +199,18 @@ export async function updateItemSettings(
 export async function removeItem(itemId: string) {
   const auth = await requireItemManager();
   if (auth.error || !auth.user) throw new Error(auth.error || "Not signed in");
-  if (auth.role !== "admin") throw new Error("Admin access required");
 
   const admin = createAdminClient();
   const { error } = await admin.from("items").delete().eq("id", itemId);
-  if (error) throw new Error(error.message);
+  if (error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("foreign key") || msg.includes("restrict")) {
+      throw new Error(
+        "This item is used in an order, so it can’t be deleted yet."
+      );
+    }
+    throw new Error(error.message);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/chef");

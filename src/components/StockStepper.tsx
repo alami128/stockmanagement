@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import ItemIcon from "@/components/ItemIcon";
-import { setItemQuantity } from "@/lib/actions/items";
+import { removeItem, setItemQuantity } from "@/lib/actions/items";
 import {
   getStockStatus,
   STOCK_STATUS_BADGE,
@@ -27,6 +27,23 @@ export default function StockStepper({ item }: { item: Item }) {
     setQuantity(safe);
     startTransition(() => {
       setItemQuantity(item.id, safe);
+    });
+  }
+
+  function handleDelete() {
+    if (
+      !window.confirm(
+        `Remove “${item.name}” completely from the kitchen list?`
+      )
+    ) {
+      return;
+    }
+    startTransition(async () => {
+      try {
+        await removeItem(item.id);
+      } catch (e) {
+        window.alert(e instanceof Error ? e.message : "Failed to delete item.");
+      }
     });
   }
 
@@ -72,7 +89,7 @@ export default function StockStepper({ item }: { item: Item }) {
         />
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-4">
+      <div className="mt-4 flex items-center justify-between gap-3">
         <button
           onClick={() => commit(quantity - step)}
           disabled={isPending || quantity <= 0}
@@ -82,7 +99,7 @@ export default function StockStepper({ item }: { item: Item }) {
           −
         </button>
 
-        <div className="text-center">
+        <div className="min-w-0 flex-1 text-center">
           <p className="text-2xl font-bold tabular-nums text-neutral-900">
             {formatQuantity(quantity, item.unit)}
           </p>
@@ -91,14 +108,39 @@ export default function StockStepper({ item }: { item: Item }) {
           </p>
         </div>
 
-        <button
-          onClick={() => commit(quantity + step)}
-          disabled={isPending}
-          aria-label={`Increase ${item.name}`}
-          className="btn h-14 w-14 shrink-0 bg-neutral-900 p-0 text-2xl font-bold text-white hover:bg-neutral-800 disabled:opacity-40"
-        >
-          +
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={() => commit(quantity + step)}
+            disabled={isPending}
+            aria-label={`Increase ${item.name}`}
+            className="btn h-14 w-14 shrink-0 bg-neutral-900 p-0 text-2xl font-bold text-white hover:bg-neutral-800 disabled:opacity-40"
+          >
+            +
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={isPending}
+            aria-label={`Delete ${item.name}`}
+            title="Delete item"
+            className="btn h-14 w-14 shrink-0 border-2 border-red-500 bg-white p-0 text-red-600 hover:bg-red-50 disabled:opacity-40"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="mx-auto h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M3 6h18" />
+              <path d="M8 6V4h8v2" />
+              <path d="M19 6l-1 14H6L5 6" />
+              <path d="M10 11v6M14 11v6" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
