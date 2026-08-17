@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { revalidateKitchenDashboards } from "@/lib/revalidate-kitchen";
 import { redirect } from "next/navigation";
 
 export interface OrderLine {
@@ -43,10 +44,7 @@ export async function createOrder(lines: OrderLine[]) {
 
   if (itemsError) throw new Error(itemsError.message);
 
-  revalidatePath("/senior-chef");
-  revalidatePath("/senior-chef/orders");
-  revalidatePath("/senior-chef/preps");
-  revalidatePath("/senior-chef/kitchen-status");
+  revalidateKitchenDashboards();
   redirect(`/senior-chef/orders/${order.id}`);
 }
 
@@ -62,9 +60,7 @@ export async function markOrderStatus(
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/senior-chef");
-  revalidatePath("/senior-chef/orders");
-  revalidatePath("/senior-chef/preps");
-  revalidatePath("/senior-chef/kitchen-status");
+  revalidateKitchenDashboards();
   revalidatePath(`/senior-chef/orders/${orderId}`);
+  revalidatePath(`/chef/orders/${orderId}`);
 }

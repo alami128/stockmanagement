@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function HeadChefNavCard({
+export default function KitchenNavCard({
   href,
   title,
   subtitle,

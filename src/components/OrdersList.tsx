@@ -9,7 +9,13 @@ interface OrderRow {
   users?: { name: string } | null;
 }
 
-export default function HeadChefOrdersList({ orders }: { orders: OrderRow[] }) {
+export default function OrdersList({
+  orders,
+  basePath,
+}: {
+  orders: OrderRow[];
+  basePath: "/chef" | "/senior-chef";
+}) {
   if (orders.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-5 py-8 text-center text-neutral-500">
@@ -23,7 +29,7 @@ export default function HeadChefOrdersList({ orders }: { orders: OrderRow[] }) {
       {orders.map((order) => (
         <Link
           key={order.id}
-          href={`/senior-chef/orders/${order.id}`}
+          href={`${basePath}/orders/${order.id}`}
           className="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-neutral-50"
         >
           <div className="min-w-0">

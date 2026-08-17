@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-export default function SeniorChefBackLink({
-  href = "/senior-chef",
+export default function DashboardBackLink({
+  href,
   label = "Back to dashboard",
 }: {
-  href?: string;
+  href: string;
   label?: string;
 }) {
   return (

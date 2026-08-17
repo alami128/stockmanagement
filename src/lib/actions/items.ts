@@ -2,6 +2,7 @@
 
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { revalidateKitchenDashboards } from "@/lib/revalidate-kitchen";
 import { guessCategory, isItemCategory } from "@/lib/categories";
 import type { ItemCategory, Role, StockUnit } from "@/lib/types";
 
@@ -54,10 +55,7 @@ export async function setItemQuantity(itemId: string, quantity: number) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/chef");
-  revalidatePath("/senior-chef");
-  revalidatePath("/senior-chef/preps");
-  revalidatePath("/senior-chef/kitchen-status");
+  revalidateKitchenDashboards();
 }
 
 export async function addItem(formData: FormData): Promise<ActionResult> {
@@ -122,11 +120,8 @@ export async function addItem(formData: FormData): Promise<ActionResult> {
     };
   }
 
-  revalidatePath("/chef");
+  revalidateKitchenDashboards();
   revalidatePath("/admin");
-  revalidatePath("/senior-chef");
-  revalidatePath("/senior-chef/preps");
-  revalidatePath("/senior-chef/kitchen-status");
   return { error: null };
 }
 
@@ -147,10 +142,7 @@ export async function renameItem(itemId: string, name: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin");
-  revalidatePath("/chef");
-  revalidatePath("/senior-chef");
-  revalidatePath("/senior-chef/preps");
-  revalidatePath("/senior-chef/kitchen-status");
+  revalidateKitchenDashboards();
 }
 
 export async function updateItemSettings(
@@ -203,10 +195,7 @@ export async function updateItemSettings(
   }
 
   revalidatePath("/admin");
-  revalidatePath("/chef");
-  revalidatePath("/senior-chef");
-  revalidatePath("/senior-chef/preps");
-  revalidatePath("/senior-chef/kitchen-status");
+  revalidateKitchenDashboards();
   return { error: null };
 }
 
@@ -227,8 +216,5 @@ export async function removeItem(itemId: string) {
   }
 
   revalidatePath("/admin");
-  revalidatePath("/chef");
-  revalidatePath("/senior-chef");
-  revalidatePath("/senior-chef/preps");
-  revalidatePath("/senior-chef/kitchen-status");
+  revalidateKitchenDashboards();
 }

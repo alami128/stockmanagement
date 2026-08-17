@@ -139,7 +139,7 @@ create policy "items_delete" on public.items
 -- orders: senior chefs and admins can view/create/update
 drop policy if exists "orders_select" on public.orders;
 create policy "orders_select" on public.orders
-  for select using (public.current_role() in ('senior_chef', 'admin'));
+  for select using (public.current_role() in ('chef', 'senior_chef', 'admin'));
 
 drop policy if exists "orders_insert" on public.orders;
 create policy "orders_insert" on public.orders
@@ -152,7 +152,7 @@ create policy "orders_update" on public.orders
 -- order_items: same access as orders
 drop policy if exists "order_items_select" on public.order_items;
 create policy "order_items_select" on public.order_items
-  for select using (public.current_role() in ('senior_chef', 'admin'));
+  for select using (public.current_role() in ('chef', 'senior_chef', 'admin'));
 
 drop policy if exists "order_items_insert" on public.order_items;
 create policy "order_items_insert" on public.order_items

@@ -1,6 +1,6 @@
+import DashboardBackLink from "@/components/DashboardBackLink";
 import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
-import SeniorChefBackLink from "@/components/SeniorChefBackLink";
 import CreateOrderForm from "@/components/CreateOrderForm";
 import { getStockStatus } from "@/lib/stock";
 import type { Item } from "@/lib/types";
@@ -19,7 +19,7 @@ export default async function CreateOrderPage() {
 
   return (
     <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
-      <SeniorChefBackLink href="/senior-chef/orders" label="Back to orders" />
+      <DashboardBackLink href="/senior-chef/orders" label="Back to orders" />
 
       <DashboardHeader
         eyebrow="Ordering"
