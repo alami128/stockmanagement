@@ -40,7 +40,7 @@ export default function PrepsPageContent({
 
       <DashboardHeader
         eyebrow="Preps Needed"
-        title={mode === "select" ? "Today’s Preps" : "Prep List"}
+        title={mode === "select" ? "Today’s Preps" : "Team prep overview"}
         subtitle={
           mode === "select"
             ? pendingPrepCount > 0
@@ -49,10 +49,10 @@ export default function PrepsPageContent({
                 ? `${doneCount} prep${doneCount === 1 ? "" : "s"} done`
                 : "Add preps from the menu or type your own."
             : pendingPrepCount > 0
-              ? `${pendingPrepCount} still to prep · ${doneCount} done`
+              ? `${pendingPrepCount} still waiting · ${doneCount} completed`
               : doneCount > 0
-                ? `All ${doneCount} prep${doneCount === 1 ? "" : "s"} done`
-                : "Waiting for chefs to add today’s preps"
+                ? `All ${doneCount} prep${doneCount === 1 ? "" : "s"} completed today`
+                : "Waiting for the team to add today’s preps"
         }
       />
 

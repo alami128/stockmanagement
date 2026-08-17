@@ -1,4 +1,13 @@
 import type { PrepSelection } from "@/lib/types";
+import {
+  HeadChefCategoryBlock,
+  HeadChefEmptyState,
+  HeadChefItemCard,
+  HeadChefProgressBar,
+  HeadChefSectionGroup,
+  HeadChefSubsection,
+  HeadChefSummaryGrid,
+} from "@/components/HeadChefOverviewUI";
 
 type SelectionRow = PrepSelection & {
   users?: { name: string } | null;
@@ -11,91 +20,112 @@ export default function HeadChefPrepView({
 }) {
   if (selections.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-5 py-8 text-center text-neutral-500">
-        No preps added for today yet. Chefs will list them here.
-      </p>
+      <HeadChefEmptyState
+        icon="🍳"
+        title="No preps yet today"
+        message="When chefs add menu or custom preps, they’ll show up here so you can track what’s left and what’s done."
+      />
     );
   }
 
   const pending = selections.filter((s) => !s.done);
   const done = selections.filter((s) => s.done);
+  const total = selections.length;
+
+  const pendingBySection = groupBySection(pending);
+  const doneBySection = groupBySection(done);
 
   return (
-    <div className="space-y-8">
-      <PrepGroup
-        title="To prep"
-        badgeClass="border-yellow-500 text-yellow-700"
-        items={pending}
-        emptyMessage="All preps are done for today."
+    <div className="space-y-6">
+      <HeadChefSummaryGrid
+        stats={[
+          { label: "To prep", value: pending.length, tone: "amber" },
+          { label: "Done", value: done.length, tone: "green" },
+          { label: "Total", value: total, tone: "neutral" },
+          {
+            label: "Chefs",
+            value: countChefs(selections),
+            tone: "neutral",
+          },
+        ]}
       />
-      <PrepGroup
-        title="Done"
-        badgeClass="border-green-500 text-green-700"
-        items={done}
-        emptyMessage="Nothing marked done yet."
-        strikethrough
-      />
+
+      <HeadChefProgressBar done={done.length} total={total} />
+
+      <HeadChefCategoryBlock
+        icon="📋"
+        title="Today’s prep list"
+        description="Grouped by menu section. Chefs tick items off when finished."
+        accentClass="border-l-4 border-l-amber-400"
+      >
+        <HeadChefSubsection
+          title="Still to prep"
+          count={pending.length}
+          tone="amber"
+          emptyMessage="All preps are done — great work from the team."
+        >
+          {pending.length > 0 &&
+            Object.entries(pendingBySection).map(([section, items]) => (
+              <HeadChefSectionGroup
+                key={section}
+                sectionName={section}
+                count={items.length}
+              >
+                {items.map((row) => (
+                  <HeadChefItemCard
+                    key={row.id}
+                    title={row.name}
+                    chefName={row.users?.name || "Chef"}
+                    statusLabel="To prep"
+                    tone="amber"
+                  />
+                ))}
+              </HeadChefSectionGroup>
+            ))}
+        </HeadChefSubsection>
+
+        <HeadChefSubsection
+          title="Completed"
+          count={done.length}
+          tone="green"
+          emptyMessage="Nothing marked done yet."
+        >
+          {done.length > 0 &&
+            Object.entries(doneBySection).map(([section, items]) => (
+              <HeadChefSectionGroup
+                key={section}
+                sectionName={section}
+                count={items.length}
+              >
+                {items.map((row) => (
+                  <HeadChefItemCard
+                    key={row.id}
+                    title={row.name}
+                    chefName={row.users?.name || "Chef"}
+                    statusLabel="Done"
+                    tone="green"
+                    done
+                  />
+                ))}
+              </HeadChefSectionGroup>
+            ))}
+        </HeadChefSubsection>
+      </HeadChefCategoryBlock>
     </div>
   );
 }
 
-function PrepGroup({
-  title,
-  badgeClass,
-  items,
-  emptyMessage,
-  strikethrough = false,
-}: {
-  title: string;
-  badgeClass: string;
-  items: SelectionRow[];
-  emptyMessage: string;
-  strikethrough?: boolean;
-}) {
-  return (
-    <section>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2
-          className={`inline-flex rounded-full border-2 px-3.5 py-1.5 font-display text-sm font-semibold tracking-tight ${badgeClass}`}
-        >
-          {title}
-        </h2>
-        <span className="text-sm text-neutral-400">{items.length}</span>
-      </div>
-      {items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-5 py-6 text-center text-sm text-neutral-500">
-          {emptyMessage}
-        </p>
-      ) : (
-        <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-neutral-200 bg-white">
-          {items.map((row) => (
-            <li
-              key={row.id}
-              className="flex items-center justify-between gap-3 px-4 py-3.5"
-            >
-              <div className="min-w-0">
-                <p
-                  className={`font-medium ${
-                    strikethrough
-                      ? "text-neutral-500 line-through"
-                      : "text-neutral-900"
-                  }`}
-                >
-                  {row.name}
-                </p>
-                <p className="text-sm text-neutral-500">
-                  {row.section} · {row.users?.name || "Chef"}
-                </p>
-              </div>
-              <span
-                className={`shrink-0 rounded-full border-2 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${badgeClass}`}
-              >
-                {strikethrough ? "Done" : "To prep"}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+function groupBySection(items: SelectionRow[]) {
+  const groups: Record<string, SelectionRow[]> = {};
+  for (const item of items) {
+    const key = item.section?.trim() || "Other";
+    (groups[key] ||= []).push(item);
+  }
+  return Object.fromEntries(
+    Object.entries(groups).sort(([a], [b]) => a.localeCompare(b))
   );
+}
+
+function countChefs(items: SelectionRow[]) {
+  return new Set(items.map((i) => i.users?.name || i.selected_by)).size;
 }

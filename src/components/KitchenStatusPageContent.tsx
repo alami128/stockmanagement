@@ -32,17 +32,11 @@ export default function KitchenStatusPageContent({
     .length;
 
   const subtitle =
-    mode === "select"
-      ? pendingCount > 0
-        ? `${pendingClean} to clean · ${pendingFix} to fix${doneCount > 0 ? ` · ${doneCount} done` : ""}`
-        : doneCount > 0
-          ? `${doneCount} item${doneCount === 1 ? "" : "s"} done today`
-          : "Flag equipment to clean or fix."
-      : pendingCount > 0
-        ? `${pendingClean} to clean · ${pendingFix} to fix · ${doneCount} done`
-        : doneCount > 0
-          ? `All ${doneCount} item${doneCount === 1 ? "" : "s"} done today`
-          : "Waiting for chefs to log today’s status";
+    pendingCount > 0
+      ? `${pendingClean} to clean · ${pendingFix} to fix${doneCount > 0 ? ` · ${doneCount} done` : ""}`
+      : doneCount > 0
+        ? `${doneCount} item${doneCount === 1 ? "" : "s"} done today`
+        : "Flag equipment to clean or fix.";
 
   return (
     <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
@@ -50,8 +44,16 @@ export default function KitchenStatusPageContent({
 
       <DashboardHeader
         eyebrow="Kitchen Status"
-        title={mode === "select" ? "Today’s Status" : "Kitchen Status"}
-        subtitle={subtitle}
+        title={mode === "select" ? "Today’s Status" : "Kitchen overview"}
+        subtitle={
+          mode === "select"
+            ? subtitle
+            : pendingCount > 0
+              ? `${pendingClean} cleaning · ${pendingFix} repairs still open`
+              : doneCount > 0
+                ? `All ${doneCount} task${doneCount === 1 ? "" : "s"} completed today`
+                : "Waiting for the team to log equipment status"
+        }
       />
 
       {mode === "select" ? (

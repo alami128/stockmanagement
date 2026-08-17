@@ -1,14 +1,54 @@
 import type { KitchenStatusTask, KitchenTaskType } from "@/lib/types";
+import {
+  HeadChefCategoryBlock,
+  HeadChefEmptyState,
+  HeadChefItemCard,
+  HeadChefProgressBar,
+  HeadChefSubsection,
+  HeadChefSummaryGrid,
+} from "@/components/HeadChefOverviewUI";
 
 type TaskRow = KitchenStatusTask & {
   users?: { name: string } | null;
 };
 
-const TYPE_LABELS: Record<KitchenTaskType, { pending: string; done: string }> =
+const CATEGORY: Record<
+  KitchenTaskType,
   {
-    clean: { pending: "To clean", done: "Cleaned" },
-    fix: { pending: "To fix", done: "Fixed" },
-  };
+    icon: string;
+    title: string;
+    description: string;
+    accent: string;
+    pendingLabel: string;
+    doneLabel: string;
+    pendingTone: "blue" | "orange";
+    pendingEmpty: string;
+    doneEmpty: string;
+  }
+> = {
+  clean: {
+    icon: "🧽",
+    title: "Cleaning",
+    description: "Equipment and areas flagged for cleaning today.",
+    accent: "border-l-4 border-l-blue-400",
+    pendingLabel: "Needs cleaning",
+    doneLabel: "Cleaned",
+    pendingTone: "blue",
+    pendingEmpty: "Nothing left to clean.",
+    doneEmpty: "No cleaning tasks marked done yet.",
+  },
+  fix: {
+    icon: "🔧",
+    title: "Repairs",
+    description: "Equipment issues that need fixing or maintenance.",
+    accent: "border-l-4 border-l-orange-400",
+    pendingLabel: "Needs repair",
+    doneLabel: "Fixed",
+    pendingTone: "orange",
+    pendingEmpty: "Nothing left to fix.",
+    doneEmpty: "No repairs marked done yet.",
+  },
+};
 
 export default function HeadChefKitchenStatusView({
   tasks,
@@ -17,131 +57,89 @@ export default function HeadChefKitchenStatusView({
 }) {
   if (tasks.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-5 py-8 text-center text-neutral-500">
-        No kitchen status items for today yet. Chefs will add them here.
-      </p>
+      <HeadChefEmptyState
+        icon="🏠"
+        title="Kitchen is all clear"
+        message="Chefs haven’t flagged any cleaning or repair items yet. Check back later or ask the team to log equipment status."
+      />
     );
   }
 
-  return (
-    <div className="space-y-10">
-      {(["clean", "fix"] as const).map((taskType) => (
-        <TaskTypeView
-          key={taskType}
-          taskType={taskType}
-          tasks={tasks.filter((t) => t.task_type === taskType)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function TaskTypeView({
-  taskType,
-  tasks,
-}: {
-  taskType: KitchenTaskType;
-  tasks: TaskRow[];
-}) {
-  const labels = TYPE_LABELS[taskType];
   const pending = tasks.filter((t) => !t.done);
   const done = tasks.filter((t) => t.done);
-  const pendingBadge =
-    taskType === "clean"
-      ? "border-blue-500 text-blue-700"
-      : "border-orange-500 text-orange-700";
+  const pendingClean = pending.filter((t) => t.task_type === "clean").length;
+  const pendingFix = pending.filter((t) => t.task_type === "fix").length;
 
   return (
-    <section className="space-y-6">
-      <h2 className="font-display text-lg font-semibold text-neutral-900">
-        {taskType === "clean" ? "Cleaning" : "Repairs"}
-      </h2>
-
-      <PrepGroup
-        title={labels.pending}
-        badgeClass={pendingBadge}
-        items={pending}
-        emptyMessage={
-          taskType === "clean"
-            ? "Nothing left to clean."
-            : "Nothing left to fix."
-        }
+    <div className="space-y-6">
+      <HeadChefSummaryGrid
+        stats={[
+          { label: "To clean", value: pendingClean, tone: "blue" },
+          { label: "To fix", value: pendingFix, tone: "orange" },
+          { label: "Done", value: done.length, tone: "green" },
+          { label: "Total", value: tasks.length, tone: "neutral" },
+        ]}
       />
-      <PrepGroup
-        title={labels.done}
-        badgeClass="border-green-500 text-green-700"
-        items={done}
-        emptyMessage={
-          taskType === "clean"
-            ? "Nothing marked cleaned yet."
-            : "Nothing marked fixed yet."
-        }
-        strikethrough
-        doneLabel={taskType === "clean" ? "Cleaned" : "Fixed"}
-      />
-    </section>
-  );
-}
 
-function PrepGroup({
-  title,
-  badgeClass,
-  items,
-  emptyMessage,
-  strikethrough = false,
-  doneLabel,
-}: {
-  title: string;
-  badgeClass: string;
-  items: TaskRow[];
-  emptyMessage: string;
-  strikethrough?: boolean;
-  doneLabel?: string;
-}) {
-  return (
-    <div>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h3
-          className={`inline-flex rounded-full border-2 px-3.5 py-1.5 font-display text-sm font-semibold tracking-tight ${badgeClass}`}
-        >
-          {title}
-        </h3>
-        <span className="text-sm text-neutral-400">{items.length}</span>
-      </div>
-      {items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-5 py-6 text-center text-sm text-neutral-500">
-          {emptyMessage}
-        </p>
-      ) : (
-        <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-neutral-200 bg-white">
-          {items.map((row) => (
-            <li
-              key={row.id}
-              className="flex items-center justify-between gap-3 px-4 py-3.5"
+      <HeadChefProgressBar
+        done={done.length}
+        total={tasks.length}
+        label="Kitchen tasks completed"
+      />
+
+      {(["clean", "fix"] as const).map((taskType) => {
+        const config = CATEGORY[taskType];
+        const typeTasks = tasks.filter((t) => t.task_type === taskType);
+        if (typeTasks.length === 0) return null;
+
+        const typePending = typeTasks.filter((t) => !t.done);
+        const typeDone = typeTasks.filter((t) => t.done);
+
+        return (
+          <HeadChefCategoryBlock
+            key={taskType}
+            icon={config.icon}
+            title={config.title}
+            description={config.description}
+            accentClass={config.accent}
+          >
+            <HeadChefSubsection
+              title={config.pendingLabel}
+              count={typePending.length}
+              tone={config.pendingTone}
+              emptyMessage={config.pendingEmpty}
             >
-              <div className="min-w-0">
-                <p
-                  className={`font-medium ${
-                    strikethrough
-                      ? "text-neutral-500 line-through"
-                      : "text-neutral-900"
-                  }`}
-                >
-                  {row.name}
-                </p>
-                <p className="text-sm text-neutral-500">
-                  {row.users?.name || "Chef"}
-                </p>
-              </div>
-              <span
-                className={`shrink-0 rounded-full border-2 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${badgeClass}`}
-              >
-                {strikethrough ? doneLabel || "Done" : title}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+              {typePending.map((row) => (
+                <HeadChefItemCard
+                  key={row.id}
+                  title={row.name}
+                  chefName={row.users?.name || "Chef"}
+                  statusLabel={config.pendingLabel}
+                  tone={config.pendingTone}
+                />
+              ))}
+            </HeadChefSubsection>
+
+            <HeadChefSubsection
+              title={config.doneLabel}
+              count={typeDone.length}
+              tone="green"
+              emptyMessage={config.doneEmpty}
+            >
+              {typeDone.map((row) => (
+                <HeadChefItemCard
+                  key={row.id}
+                  title={row.name}
+                  chefName={row.users?.name || "Chef"}
+                  statusLabel={config.doneLabel}
+                  tone="green"
+                  done
+                />
+              ))}
+            </HeadChefSubsection>
+          </HeadChefCategoryBlock>
+        );
+      })}
     </div>
   );
 }
