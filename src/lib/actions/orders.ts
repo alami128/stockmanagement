@@ -44,6 +44,9 @@ export async function createOrder(lines: OrderLine[]) {
   if (itemsError) throw new Error(itemsError.message);
 
   revalidatePath("/senior-chef");
+  revalidatePath("/senior-chef/orders");
+  revalidatePath("/senior-chef/preps");
+  revalidatePath("/senior-chef/kitchen-status");
   redirect(`/senior-chef/orders/${order.id}`);
 }
 
@@ -60,5 +63,8 @@ export async function markOrderStatus(
   if (error) throw new Error(error.message);
 
   revalidatePath("/senior-chef");
+  revalidatePath("/senior-chef/orders");
+  revalidatePath("/senior-chef/preps");
+  revalidatePath("/senior-chef/kitchen-status");
   revalidatePath(`/senior-chef/orders/${orderId}`);
 }

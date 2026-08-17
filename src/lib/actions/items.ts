@@ -56,6 +56,8 @@ export async function setItemQuantity(itemId: string, quantity: number) {
 
   revalidatePath("/chef");
   revalidatePath("/senior-chef");
+  revalidatePath("/senior-chef/preps");
+  revalidatePath("/senior-chef/kitchen-status");
 }
 
 export async function addItem(formData: FormData): Promise<ActionResult> {
@@ -123,6 +125,8 @@ export async function addItem(formData: FormData): Promise<ActionResult> {
   revalidatePath("/chef");
   revalidatePath("/admin");
   revalidatePath("/senior-chef");
+  revalidatePath("/senior-chef/preps");
+  revalidatePath("/senior-chef/kitchen-status");
   return { error: null };
 }
 
@@ -145,6 +149,8 @@ export async function renameItem(itemId: string, name: string) {
   revalidatePath("/admin");
   revalidatePath("/chef");
   revalidatePath("/senior-chef");
+  revalidatePath("/senior-chef/preps");
+  revalidatePath("/senior-chef/kitchen-status");
 }
 
 export async function updateItemSettings(
@@ -199,6 +205,8 @@ export async function updateItemSettings(
   revalidatePath("/admin");
   revalidatePath("/chef");
   revalidatePath("/senior-chef");
+  revalidatePath("/senior-chef/preps");
+  revalidatePath("/senior-chef/kitchen-status");
   return { error: null };
 }
 
@@ -221,4 +229,6 @@ export async function removeItem(itemId: string) {
   revalidatePath("/admin");
   revalidatePath("/chef");
   revalidatePath("/senior-chef");
+  revalidatePath("/senior-chef/preps");
+  revalidatePath("/senior-chef/kitchen-status");
 }

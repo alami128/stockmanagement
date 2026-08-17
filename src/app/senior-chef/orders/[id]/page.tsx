@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
+import SeniorChefBackLink from "@/components/SeniorChefBackLink";
 import StatusBadge from "@/components/StatusBadge";
 import OrderStatusActions from "@/components/OrderStatusActions";
 import ItemIcon from "@/components/ItemIcon";
@@ -30,14 +30,7 @@ export default async function OrderDetailPage({
 
   return (
     <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
-      <div className="mb-5">
-        <Link
-          href="/senior-chef"
-          className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
-        >
-          &larr; Back to dashboard
-        </Link>
-      </div>
+      <SeniorChefBackLink href="/senior-chef/orders" label="Back to orders" />
 
       <DashboardHeader
         eyebrow="Order detail"

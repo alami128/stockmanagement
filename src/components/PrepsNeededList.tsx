@@ -1,4 +1,3 @@
-import Link from "next/link";
 import ItemIcon from "@/components/ItemIcon";
 import {
   getStockStatus,
