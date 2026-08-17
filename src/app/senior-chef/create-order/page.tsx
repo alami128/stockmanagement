@@ -24,7 +24,7 @@ export default async function CreateOrderPage() {
           href="/senior-chef"
           className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
         >
-          &larr; Back to stock overview
+          &larr; Back to dashboard
         </Link>
       </div>
 
