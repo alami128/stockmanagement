@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
 import DashboardBackLink from "@/components/DashboardBackLink";
-import StockOverview from "@/components/StockOverview";
+import HeadChefOrdersView from "@/components/HeadChefOrdersView";
 import { getStockStatus } from "@/lib/stock";
 import type { Item } from "@/lib/types";
 
@@ -13,9 +13,11 @@ export default async function HeadChefOrdersPage() {
     (i) => i.category !== "cleaning"
   );
 
-  const alertCount = items.filter(
-    (i) => getStockStatus(i) !== "available"
+  const outOfStock = items.filter(
+    (i) => getStockStatus(i) === "needs_order"
   ).length;
+  const runningLow = items.filter((i) => getStockStatus(i) === "low").length;
+  const alertCount = outOfStock + runningLow;
 
   return (
     <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
@@ -23,27 +25,25 @@ export default async function HeadChefOrdersPage() {
 
       <DashboardHeader
         eyebrow="Orders"
-        title="Items to Order"
+        title="Order overview"
         subtitle={
           alertCount > 0
-            ? `${alertCount} item${alertCount === 1 ? "" : "s"} out or running low`
-            : "Chefs haven’t flagged any stock issues yet"
+            ? `${outOfStock} out of stock · ${runningLow} running low`
+            : "All tracked stock is above reorder levels"
         }
       />
 
       <div className="mb-6">
         <Link
           href="/senior-chef/create-order"
-          className="btn inline-flex w-full items-center justify-center bg-neutral-900 text-white hover:bg-neutral-800"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-neutral-900 bg-neutral-900 px-5 py-4 text-base font-semibold text-white transition hover:bg-neutral-800 active:scale-[0.99]"
         >
-          Create order
+          Create supplier order
+          <span aria-hidden>→</span>
         </Link>
       </div>
 
-      <StockOverview
-        items={items}
-        sections={["needs_order", "low"]}
-      />
+      <HeadChefOrdersView items={items} />
     </main>
   );
 }

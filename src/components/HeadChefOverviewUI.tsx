@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-type StatTone = "amber" | "green" | "blue" | "orange" | "neutral";
+type StatTone = "amber" | "green" | "blue" | "orange" | "red" | "neutral";
 
 const STAT_TONE: Record<
   StatTone,
@@ -29,6 +29,12 @@ const STAT_TONE: Record<
     text: "text-orange-800",
     ring: "ring-orange-200",
     value: "text-orange-900",
+  },
+  red: {
+    bg: "bg-red-50",
+    text: "text-red-800",
+    ring: "ring-red-200",
+    value: "text-red-900",
   },
   neutral: {
     bg: "bg-neutral-50",
@@ -71,10 +77,14 @@ export function HeadChefProgressBar({
   done,
   total,
   label = "Completed today",
+  detailLabel,
+  barClassName = "bg-green-500",
 }: {
   done: number;
   total: number;
   label?: string;
+  detailLabel?: string;
+  barClassName?: string;
 }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
@@ -84,7 +94,7 @@ export function HeadChefProgressBar({
         <div>
           <p className="text-sm font-medium text-neutral-900">{label}</p>
           <p className="text-xs text-neutral-500">
-            {done} of {total} finished
+            {detailLabel ?? `${done} of ${total} finished`}
           </p>
         </div>
         <span className="font-display text-2xl font-semibold tabular-nums text-neutral-900">
@@ -100,7 +110,7 @@ export function HeadChefProgressBar({
         aria-label={label}
       >
         <div
-          className="h-full rounded-full bg-green-500 transition-all duration-500"
+          className={`h-full rounded-full transition-all duration-500 ${barClassName}`}
           style={{ width: `${pct}%` }}
         />
       </div>
