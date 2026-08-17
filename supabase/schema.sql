@@ -55,6 +55,26 @@ create table if not exists public.order_items (
 create index if not exists order_items_order_id_idx on public.order_items(order_id);
 create index if not exists orders_created_at_idx on public.orders(created_at desc);
 
+create table if not exists public.prep_items (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  section text not null default 'Menu',
+  sort_order int not null default 0,
+  active boolean not null default true
+);
+
+create table if not exists public.prep_selections (
+  id uuid primary key default gen_random_uuid(),
+  prep_item_id uuid not null references public.prep_items(id) on delete cascade,
+  prep_date date not null default current_date,
+  selected_by uuid not null references public.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (prep_item_id, prep_date)
+);
+
+create index if not exists prep_selections_date_idx
+  on public.prep_selections (prep_date desc);
+
 -- ============================================================
 -- NEW USER TRIGGER
 -- Automatically creates a public.users row whenever someone is
@@ -108,6 +128,8 @@ alter table public.users enable row level security;
 alter table public.items enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
+alter table public.prep_items enable row level security;
+alter table public.prep_selections enable row level security;
 
 -- users: everyone can read their own row; admins can read everyone
 drop policy if exists "users_select" on public.users;
@@ -161,3 +183,25 @@ create policy "order_items_insert" on public.order_items
 drop policy if exists "order_items_update" on public.order_items;
 create policy "order_items_update" on public.order_items
   for update using (public.current_role() in ('senior_chef', 'admin'));
+
+-- prep_items: menu of items chefs can mark for daily prep
+drop policy if exists "prep_items_select" on public.prep_items;
+create policy "prep_items_select" on public.prep_items
+  for select using (auth.role() = 'authenticated');
+
+drop policy if exists "prep_items_manage" on public.prep_items;
+create policy "prep_items_manage" on public.prep_items
+  for all using (public.current_role() = 'admin');
+
+-- prep_selections: chefs mark preps; head chef reads
+drop policy if exists "prep_selections_select" on public.prep_selections;
+create policy "prep_selections_select" on public.prep_selections
+  for select using (public.current_role() in ('chef', 'senior_chef', 'admin'));
+
+drop policy if exists "prep_selections_insert" on public.prep_selections;
+create policy "prep_selections_insert" on public.prep_selections
+  for insert with check (public.current_role() in ('chef', 'admin'));
+
+drop policy if exists "prep_selections_delete" on public.prep_selections;
+create policy "prep_selections_delete" on public.prep_selections
+  for delete using (public.current_role() in ('chef', 'admin'));

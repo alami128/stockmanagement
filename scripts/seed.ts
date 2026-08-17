@@ -334,6 +334,57 @@ async function seedItems(items: SeedItem[]) {
   }
 }
 
+type PrepMenuEntry = {
+  name: string;
+  section?: string;
+  sort_order?: number;
+};
+
+async function seedPreps() {
+  const menuPath = join(process.cwd(), "scripts/data/prep_menu.json");
+  let entries: PrepMenuEntry[] = [];
+  try {
+    entries = JSON.parse(readFileSync(menuPath, "utf8")) as PrepMenuEntry[];
+  } catch {
+    console.warn("No prep_menu.json found; skipping prep items.");
+    return;
+  }
+
+  if (entries.length === 0) {
+    console.log("No prep menu entries yet (prep_menu.json is empty).");
+    return;
+  }
+
+  let created = 0;
+  for (const [index, entry] of entries.entries()) {
+    const name = entry.name?.trim();
+    if (!name) continue;
+
+    const { data: existing } = await supabase
+      .from("prep_items")
+      .select("id")
+      .eq("name", name)
+      .maybeSingle();
+
+    if (existing) continue;
+
+    const { error } = await supabase.from("prep_items").insert({
+      name,
+      section: entry.section?.trim() || "Menu",
+      sort_order: entry.sort_order ?? index,
+    });
+
+    if (error) {
+      console.error(`Failed to create prep item ${name}:`, error.message);
+    } else {
+      created += 1;
+      console.log(`Created prep item: ${name}`);
+    }
+  }
+
+  console.log(`Seeded ${created} prep menu items.`);
+}
+
 async function main() {
   const csvPath = join(
     process.cwd(),
@@ -347,6 +398,7 @@ async function main() {
 
   await seedUsers();
   await seedItems(items);
+  await seedPreps();
   console.log("\nDone. Demo logins (password: kitchen123):");
   DEMO_USERS.forEach((u) => console.log(`  ${u.role.padEnd(12)} ${u.email}`));
 }

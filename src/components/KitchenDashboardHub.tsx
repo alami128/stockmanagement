@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
 import KitchenNavCard from "@/components/KitchenNavCard";
+import { kitchenToday } from "@/lib/dates";
 import { getStockStatus } from "@/lib/stock";
 import type { Item } from "@/lib/types";
 
@@ -18,22 +19,27 @@ export default async function KitchenDashboardHub({
 }) {
   const supabase = createClient();
 
-  const [{ data: itemData }, { data: orders }] = await Promise.all([
-    supabase.from("items").select("*").order("name"),
-    supabase
-      .from("orders")
-      .select("id, status")
-      .in("status", ["draft", "ordered"]),
-  ]);
+  const today = kitchenToday();
+
+  const [{ data: itemData }, { data: orders }, { count: prepCount }] =
+    await Promise.all([
+      supabase.from("items").select("*").order("name"),
+      supabase
+        .from("orders")
+        .select("id, status")
+        .in("status", ["draft", "ordered"]),
+      supabase
+        .from("prep_selections")
+        .select("*", { count: "exact", head: true })
+        .eq("prep_date", today),
+    ]);
 
   const items = (itemData || []) as Item[];
   const cleaningItems = items.filter((i) => i.category === "cleaning");
   const kitchenAttention = cleaningItems.filter(
     (i) => getStockStatus(i) !== "available"
   ).length;
-  const prepCount = items.filter(
-    (i) => i.category !== "cleaning" && getStockStatus(i) !== "available"
-  ).length;
+  const prepsMarked = prepCount ?? 0;
   const openOrders = orders?.length ?? 0;
 
   return (
@@ -59,10 +65,14 @@ export default async function KitchenDashboardHub({
         />
         <KitchenNavCard
           href={`${basePath}/preps`}
-          title="Orders Needed"
-          subtitle="Food prep items to restock before service"
-          count={prepCount}
-          countLabel={prepCount === 1 ? "item needed" : "items needed"}
+          title="Preps Needed"
+          subtitle={
+            basePath === "/chef"
+              ? "Mark menu items to prepare for service"
+              : "See what chefs marked for prep today"
+          }
+          count={prepsMarked}
+          countLabel={prepsMarked === 1 ? "prep marked" : "preps marked"}
           accent="border-yellow-500 hover:bg-yellow-50"
         />
         <KitchenNavCard

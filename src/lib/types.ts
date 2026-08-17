@@ -62,6 +62,22 @@ export interface OrderItem {
   notes: string | null;
 }
 
+export interface PrepItem {
+  id: string;
+  name: string;
+  section: string;
+  sort_order: number;
+  active: boolean;
+}
+
+export interface PrepSelection {
+  id: string;
+  prep_item_id: string;
+  prep_date: string;
+  selected_by: string;
+  created_at: string;
+}
+
 // Minimal Supabase Database type. Hand-written to match supabase/schema.sql.
 // If you use the Supabase CLI, you can replace this with a generated
 // type via `supabase gen types typescript`.
@@ -91,6 +107,19 @@ export interface Database {
           quantity: number;
         };
         Update: Partial<OrderItem>;
+      };
+      prep_items: {
+        Row: PrepItem;
+        Insert: Partial<PrepItem> & { name: string };
+        Update: Partial<PrepItem>;
+      };
+      prep_selections: {
+        Row: PrepSelection;
+        Insert: Partial<PrepSelection> & {
+          prep_item_id: string;
+          selected_by: string;
+        };
+        Update: Partial<PrepSelection>;
       };
     };
   };
