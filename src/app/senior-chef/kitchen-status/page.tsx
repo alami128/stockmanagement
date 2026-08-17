@@ -1,5 +1,5 @@
-import KitchenStatusPageContent from "@/components/KitchenStatusPageContent";
+import KitchenStatusPageLoader from "@/components/KitchenStatusPageLoader";
 
 export default function Page() {
-  return <KitchenStatusPageContent basePath="/senior-chef" />;
+  return <KitchenStatusPageLoader basePath="/senior-chef" mode="view" />;
 }

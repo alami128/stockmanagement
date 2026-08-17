@@ -1,41 +1,85 @@
-import type { PrepSelection } from "@/lib/types";
+import type { KitchenStatusTask, KitchenTaskType } from "@/lib/types";
 
-type SelectionRow = PrepSelection & {
+type TaskRow = KitchenStatusTask & {
   users?: { name: string } | null;
 };
 
-export default function HeadChefPrepView({
-  selections,
+const TYPE_LABELS: Record<KitchenTaskType, { pending: string; done: string }> =
+  {
+    clean: { pending: "To clean", done: "Cleaned" },
+    fix: { pending: "To fix", done: "Fixed" },
+  };
+
+export default function HeadChefKitchenStatusView({
+  tasks,
 }: {
-  selections: SelectionRow[];
+  tasks: TaskRow[];
 }) {
-  if (selections.length === 0) {
+  if (tasks.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-5 py-8 text-center text-neutral-500">
-        No preps added for today yet. Chefs will list them here.
+        No kitchen status items for today yet. Chefs will add them here.
       </p>
     );
   }
 
-  const pending = selections.filter((s) => !s.done);
-  const done = selections.filter((s) => s.done);
+  return (
+    <div className="space-y-10">
+      {(["clean", "fix"] as const).map((taskType) => (
+        <TaskTypeView
+          key={taskType}
+          taskType={taskType}
+          tasks={tasks.filter((t) => t.task_type === taskType)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function TaskTypeView({
+  taskType,
+  tasks,
+}: {
+  taskType: KitchenTaskType;
+  tasks: TaskRow[];
+}) {
+  const labels = TYPE_LABELS[taskType];
+  const pending = tasks.filter((t) => !t.done);
+  const done = tasks.filter((t) => t.done);
+  const pendingBadge =
+    taskType === "clean"
+      ? "border-blue-500 text-blue-700"
+      : "border-orange-500 text-orange-700";
 
   return (
-    <div className="space-y-8">
+    <section className="space-y-6">
+      <h2 className="font-display text-lg font-semibold text-neutral-900">
+        {taskType === "clean" ? "Cleaning" : "Repairs"}
+      </h2>
+
       <PrepGroup
-        title="To prep"
-        badgeClass="border-yellow-500 text-yellow-700"
+        title={labels.pending}
+        badgeClass={pendingBadge}
         items={pending}
-        emptyMessage="All preps are done for today."
+        emptyMessage={
+          taskType === "clean"
+            ? "Nothing left to clean."
+            : "Nothing left to fix."
+        }
       />
       <PrepGroup
-        title="Done"
+        title={labels.done}
         badgeClass="border-green-500 text-green-700"
         items={done}
-        emptyMessage="Nothing marked done yet."
+        emptyMessage={
+          taskType === "clean"
+            ? "Nothing marked cleaned yet."
+            : "Nothing marked fixed yet."
+        }
         strikethrough
+        doneLabel={taskType === "clean" ? "Cleaned" : "Fixed"}
       />
-    </div>
+    </section>
   );
 }
 
@@ -45,21 +89,23 @@ function PrepGroup({
   items,
   emptyMessage,
   strikethrough = false,
+  doneLabel,
 }: {
   title: string;
   badgeClass: string;
-  items: SelectionRow[];
+  items: TaskRow[];
   emptyMessage: string;
   strikethrough?: boolean;
+  doneLabel?: string;
 }) {
   return (
-    <section>
+    <div>
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2
+        <h3
           className={`inline-flex rounded-full border-2 px-3.5 py-1.5 font-display text-sm font-semibold tracking-tight ${badgeClass}`}
         >
           {title}
-        </h2>
+        </h3>
         <span className="text-sm text-neutral-400">{items.length}</span>
       </div>
       {items.length === 0 ? (
@@ -84,18 +130,18 @@ function PrepGroup({
                   {row.name}
                 </p>
                 <p className="text-sm text-neutral-500">
-                  {row.section} · {row.users?.name || "Chef"}
+                  {row.users?.name || "Chef"}
                 </p>
               </div>
               <span
                 className={`shrink-0 rounded-full border-2 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${badgeClass}`}
               >
-                {strikethrough ? "Done" : "To prep"}
+                {strikethrough ? doneLabel || "Done" : title}
               </span>
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </div>
   );
 }

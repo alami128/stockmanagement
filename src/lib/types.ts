@@ -72,9 +72,35 @@ export interface PrepItem {
 
 export interface PrepSelection {
   id: string;
-  prep_item_id: string;
+  prep_item_id: string | null;
   prep_date: string;
+  name: string;
+  section: string;
+  done: boolean;
+  done_at: string | null;
   selected_by: string;
+  created_at: string;
+}
+
+export type KitchenTaskType = "clean" | "fix";
+
+export interface KitchenEquipment {
+  id: string;
+  name: string;
+  area: string;
+  sort_order: number;
+  active: boolean;
+}
+
+export interface KitchenStatusTask {
+  id: string;
+  task_date: string;
+  task_type: KitchenTaskType;
+  name: string;
+  equipment_id: string | null;
+  done: boolean;
+  done_at: string | null;
+  created_by: string;
   created_at: string;
 }
 
@@ -116,10 +142,26 @@ export interface Database {
       prep_selections: {
         Row: PrepSelection;
         Insert: Partial<PrepSelection> & {
-          prep_item_id: string;
+          prep_date: string;
+          name: string;
           selected_by: string;
         };
         Update: Partial<PrepSelection>;
+      };
+      kitchen_equipment: {
+        Row: KitchenEquipment;
+        Insert: Partial<KitchenEquipment> & { name: string };
+        Update: Partial<KitchenEquipment>;
+      };
+      kitchen_status_tasks: {
+        Row: KitchenStatusTask;
+        Insert: Partial<KitchenStatusTask> & {
+          task_date: string;
+          task_type: KitchenTaskType;
+          name: string;
+          created_by: string;
+        };
+        Update: Partial<KitchenStatusTask>;
       };
     };
   };

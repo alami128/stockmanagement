@@ -405,6 +405,60 @@ async function seedPreps() {
   console.log(`Seeded ${created} prep menu items.`);
 }
 
+type EquipmentEntry = {
+  name: string;
+  area?: string;
+  sort_order?: number;
+};
+
+async function seedKitchenEquipment() {
+  const equipmentPath = join(
+    process.cwd(),
+    "scripts/data/kitchen_equipment.json"
+  );
+  let entries: EquipmentEntry[] = [];
+  try {
+    entries = JSON.parse(readFileSync(equipmentPath, "utf8")) as EquipmentEntry[];
+  } catch {
+    console.warn("No kitchen_equipment.json found; skipping equipment.");
+    return;
+  }
+
+  if (entries.length === 0) {
+    console.log("No kitchen equipment entries yet.");
+    return;
+  }
+
+  let created = 0;
+  for (const [index, entry] of entries.entries()) {
+    const name = entry.name?.trim();
+    if (!name) continue;
+
+    const { data: existing } = await supabase
+      .from("kitchen_equipment")
+      .select("id")
+      .eq("name", name)
+      .maybeSingle();
+
+    if (existing) continue;
+
+    const { error } = await supabase.from("kitchen_equipment").insert({
+      name,
+      area: entry.area?.trim() || "Kitchen",
+      sort_order: entry.sort_order ?? index,
+    });
+
+    if (error) {
+      console.error(`Failed to create equipment ${name}:`, error.message);
+    } else {
+      created += 1;
+      console.log(`Created equipment: ${name}`);
+    }
+  }
+
+  console.log(`Seeded ${created} kitchen equipment items.`);
+}
+
 async function main() {
   const csvPath = join(
     process.cwd(),
@@ -419,6 +473,7 @@ async function main() {
   await seedUsers();
   await seedItems(items);
   await seedPreps();
+  await seedKitchenEquipment();
   console.log("\nDone. Demo logins (password: kitchen123):");
   DEMO_USERS.forEach((u) => console.log(`  ${u.role.padEnd(12)} ${u.email}`));
 }

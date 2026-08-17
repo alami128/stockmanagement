@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { kitchenToday } from "@/lib/dates";
 import { revalidateKitchenDashboards } from "@/lib/revalidate-kitchen";
+import type { KitchenTaskType } from "@/lib/types";
 
 async function requireChef() {
   const supabase = createClient();
@@ -18,69 +19,31 @@ async function requireChef() {
     .single();
 
   if (profile?.role !== "chef" && profile?.role !== "admin") {
-    return { error: "Only chefs can manage preps." as const, user: null, supabase };
+    return {
+      error: "Only chefs can manage kitchen status." as const,
+      user: null,
+      supabase,
+    };
   }
 
   return { error: null, user, supabase };
 }
 
-export async function togglePrepSelection(
-  prepItemId: string,
-  selected: boolean
-): Promise<{ error: string | null }> {
-  const auth = await requireChef();
-  if (auth.error || !auth.user) return { error: auth.error };
-
-  const { supabase, user } = auth;
-  const prepDate = kitchenToday();
-
-  if (selected) {
-    const { data: prepItem } = await supabase
-      .from("prep_items")
-      .select("name, section")
-      .eq("id", prepItemId)
-      .single();
-
-    if (!prepItem) return { error: "Prep item not found." };
-
-    const { error } = await supabase.from("prep_selections").insert({
-      prep_item_id: prepItemId,
-      prep_date: prepDate,
-      name: prepItem.name,
-      section: prepItem.section,
-      selected_by: user.id,
-    });
-    if (error) {
-      if (error.code === "23505") return { error: null };
-      return { error: error.message };
-    }
-  } else {
-    const { error } = await supabase
-      .from("prep_selections")
-      .delete()
-      .eq("prep_item_id", prepItemId)
-      .eq("prep_date", prepDate);
-    if (error) return { error: error.message };
-  }
-
-  revalidateKitchenDashboards();
-  return { error: null };
-}
-
-export async function addCustomPrep(
+export async function addKitchenTask(
+  taskType: KitchenTaskType,
   name: string
 ): Promise<{ error: string | null }> {
   const trimmed = name.trim();
-  if (!trimmed) return { error: "Enter a prep name." };
+  if (!trimmed) return { error: "Enter a description." };
 
   const auth = await requireChef();
   if (auth.error || !auth.user) return { error: auth.error };
 
-  const { error } = await auth.supabase.from("prep_selections").insert({
-    prep_date: kitchenToday(),
+  const { error } = await auth.supabase.from("kitchen_status_tasks").insert({
+    task_date: kitchenToday(),
+    task_type: taskType,
     name: trimmed,
-    section: "Added by chef",
-    selected_by: auth.user.id,
+    created_by: auth.user.id,
   });
 
   if (error) return { error: error.message };
@@ -89,20 +52,66 @@ export async function addCustomPrep(
   return { error: null };
 }
 
-export async function togglePrepDone(
-  selectionId: string,
+export async function toggleKitchenEquipmentTask(
+  equipmentId: string,
+  taskType: KitchenTaskType,
+  selected: boolean
+): Promise<{ error: string | null }> {
+  const auth = await requireChef();
+  if (auth.error || !auth.user) return { error: auth.error };
+
+  const { supabase, user } = auth;
+  const taskDate = kitchenToday();
+
+  if (selected) {
+    const { data: equipment } = await supabase
+      .from("kitchen_equipment")
+      .select("name")
+      .eq("id", equipmentId)
+      .single();
+
+    if (!equipment) return { error: "Equipment not found." };
+
+    const { error } = await supabase.from("kitchen_status_tasks").insert({
+      equipment_id: equipmentId,
+      task_date: taskDate,
+      task_type: taskType,
+      name: equipment.name,
+      created_by: user.id,
+    });
+
+    if (error) {
+      if (error.code === "23505") return { error: null };
+      return { error: error.message };
+    }
+  } else {
+    const { error } = await supabase
+      .from("kitchen_status_tasks")
+      .delete()
+      .eq("equipment_id", equipmentId)
+      .eq("task_date", taskDate)
+      .eq("task_type", taskType);
+    if (error) return { error: error.message };
+  }
+
+  revalidateKitchenDashboards();
+  return { error: null };
+}
+
+export async function toggleKitchenTaskDone(
+  taskId: string,
   done: boolean
 ): Promise<{ error: string | null }> {
   const auth = await requireChef();
   if (auth.error) return { error: auth.error };
 
   const { error } = await auth.supabase
-    .from("prep_selections")
+    .from("kitchen_status_tasks")
     .update({
       done,
       done_at: done ? new Date().toISOString() : null,
     })
-    .eq("id", selectionId);
+    .eq("id", taskId);
 
   if (error) return { error: error.message };
 
@@ -110,16 +119,16 @@ export async function togglePrepDone(
   return { error: null };
 }
 
-export async function removePrepSelection(
-  selectionId: string
+export async function removeKitchenTask(
+  taskId: string
 ): Promise<{ error: string | null }> {
   const auth = await requireChef();
   if (auth.error) return { error: auth.error };
 
   const { error } = await auth.supabase
-    .from("prep_selections")
+    .from("kitchen_status_tasks")
     .delete()
-    .eq("id", selectionId);
+    .eq("id", taskId);
 
   if (error) return { error: error.message };
 

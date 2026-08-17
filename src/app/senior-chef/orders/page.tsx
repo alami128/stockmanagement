@@ -1,5 +1,5 @@
-import OrdersPageContent from "@/components/OrdersPageContent";
+import HeadChefOrdersPage from "@/components/HeadChefOrdersPage";
 
 export default function Page() {
-  return <OrdersPageContent basePath="/senior-chef" canCreateOrder />;
+  return <HeadChefOrdersPage />;
 }

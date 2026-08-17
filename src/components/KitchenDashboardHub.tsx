@@ -21,31 +21,31 @@ export default async function KitchenDashboardHub({
 
   const today = kitchenToday();
 
-  const [{ data: itemData }, { data: orders }, { count: prepCount }] =
+  const [{ count: pendingKitchenCount }, { count: pendingPrepCount }] =
     await Promise.all([
-      supabase.from("items").select("*").order("name"),
       supabase
-        .from("orders")
-        .select("id, status")
-        .in("status", ["draft", "ordered"]),
+        .from("kitchen_status_tasks")
+        .select("*", { count: "exact", head: true })
+        .eq("task_date", today)
+        .eq("done", false),
       supabase
         .from("prep_selections")
         .select("*", { count: "exact", head: true })
-        .eq("prep_date", today),
+        .eq("prep_date", today)
+        .eq("done", false),
     ]);
 
+  const { data: itemData } = await supabase.from("items").select("*").order("name");
+
   const items = (itemData || []) as Item[];
-  const cleaningItems = items.filter((i) => i.category === "cleaning");
-  const kitchenAttention = cleaningItems.filter(
-    (i) => getStockStatus(i) !== "available"
-  ).length;
-  const prepsMarked = prepCount ?? 0;
+  const pendingKitchen = pendingKitchenCount ?? 0;
+  const pendingPreps = pendingPrepCount ?? 0;
   const orderNeededCount = items.filter(
     (i) => i.category !== "cleaning" && getStockStatus(i) !== "available"
   ).length;
-  const chefPrepCount =
-    basePath === "/chef" ? orderNeededCount + prepsMarked : prepsMarked;
-  const openOrders = orders?.length ?? 0;
+  const chefOrderListCount = items.filter(
+    (i) => i.category !== "cleaning"
+  ).length;
 
   return (
     <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
@@ -59,12 +59,14 @@ export default async function KitchenDashboardHub({
         <KitchenNavCard
           href={`${basePath}/kitchen-status`}
           title="Kitchen Status"
-          subtitle="Cleaning supplies, repairs, and maintenance needs"
-          count={kitchenAttention}
+          subtitle={
+            basePath === "/chef"
+              ? "Flag equipment to clean or fix"
+              : "See what needs cleaning or repair"
+          }
+          count={pendingKitchen}
           countLabel={
-            kitchenAttention === 1
-              ? "item needs attention"
-              : "items need attention"
+            pendingKitchen === 1 ? "item to action" : "items to action"
           }
           accent="border-red-500 hover:bg-red-50"
         />
@@ -73,18 +75,12 @@ export default async function KitchenDashboardHub({
           title="Preps Needed"
           subtitle={
             basePath === "/chef"
-              ? "Stock to reorder and menu preps for service"
-              : "See what chefs marked for prep today"
+              ? "Add preps and mark them done when finished"
+              : "See preps to do and what’s already done"
           }
-          count={chefPrepCount}
+          count={pendingPreps}
           countLabel={
-            basePath === "/chef"
-              ? chefPrepCount === 1
-                ? "item to action"
-                : "items to action"
-              : prepsMarked === 1
-                ? "prep marked"
-                : "preps marked"
+            pendingPreps === 1 ? "prep to do" : "preps to do"
           }
           accent="border-yellow-500 hover:bg-yellow-50"
         />
@@ -94,21 +90,17 @@ export default async function KitchenDashboardHub({
           subtitle={
             basePath === "/chef"
               ? "Full kitchen order list and stock levels"
-              : "Supplier orders and deliveries"
+              : "Items chefs flagged as out or running low"
           }
-          count={
-            basePath === "/chef"
-              ? items.filter((i) => i.category !== "cleaning").length
-              : openOrders
-          }
+          count={basePath === "/chef" ? chefOrderListCount : orderNeededCount}
           countLabel={
             basePath === "/chef"
-              ? items.filter((i) => i.category !== "cleaning").length === 1
+              ? chefOrderListCount === 1
                 ? "item on list"
                 : "items on list"
-              : openOrders === 1
-                ? "open order"
-                : "open orders"
+              : orderNeededCount === 1
+                ? "item to order"
+                : "items to order"
           }
           accent="border-green-500 hover:bg-green-50"
         />

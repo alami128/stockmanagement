@@ -10,7 +10,14 @@ import type { Item, StockStatus } from "@/lib/types";
 
 const SECTION_ORDER: StockStatus[] = ["needs_order", "low", "available"];
 
-export default function StockOverview({ items }: { items: Item[] }) {
+export default function StockOverview({
+  items,
+  sections = SECTION_ORDER,
+}: {
+  items: Item[];
+  /** Which status groups to show. Defaults to all three. */
+  sections?: StockStatus[];
+}) {
   const grouped: Record<StockStatus, Item[]> = {
     needs_order: [],
     low: [],
@@ -29,9 +36,21 @@ export default function StockOverview({ items }: { items: Item[] }) {
     );
   }
 
+  const visibleSections = sections.filter(
+    (status) => grouped[status].length > 0
+  );
+
+  if (visibleSections.length === 0) {
+    return (
+      <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-5 py-8 text-center text-neutral-500">
+        Nothing urgent right now — stock is above reorder levels.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-8">
-      {SECTION_ORDER.map((status) => {
+      {sections.map((status) => {
         const sectionItems = grouped[status];
         if (sectionItems.length === 0) return null;
 

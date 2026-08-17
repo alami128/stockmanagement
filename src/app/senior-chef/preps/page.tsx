@@ -1,5 +1,5 @@
-import PrepsPageContent from "@/components/PrepsPageContent";
+import PrepsPageLoader from "@/components/PrepsPageLoader";
 
 export default function Page() {
-  return <PrepsPageContent basePath="/senior-chef" mode="view" />;
+  return <PrepsPageLoader basePath="/senior-chef" mode="view" />;
 }
