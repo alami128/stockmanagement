@@ -8,8 +8,12 @@ import type { Item, ItemCategory } from "@/lib/types";
 
 export default function CategoryMenu({
   groups,
+  flaggedItemIds,
+  showOrderNeedToggle = false,
 }: {
   groups: { category: ItemCategory; items: Item[] }[];
+  flaggedItemIds?: Set<string>;
+  showOrderNeedToggle?: boolean;
 }) {
   // Open the first category that has something low / out, otherwise none.
   const defaultOpen =
@@ -74,7 +78,12 @@ export default function CategoryMenu({
             {isOpen && (
               <div className="space-y-2 border-t border-neutral-100 bg-neutral-50/60 px-3 py-3">
                 {items.map((item) => (
-                  <StockStepper key={item.id} item={item} />
+                  <StockStepper
+                    key={item.id}
+                    item={item}
+                    flaggedForOrder={flaggedItemIds?.has(item.id) ?? false}
+                    showOrderNeedToggle={showOrderNeedToggle}
+                  />
                 ))}
               </div>
             )}

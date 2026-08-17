@@ -1,37 +1,76 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
 import DashboardBackLink from "@/components/DashboardBackLink";
-import OrderSheetList from "@/components/OrderSheetList";
+import CategoryMenu from "@/components/CategoryMenu";
+import { kitchenToday } from "@/lib/dates";
+import { groupItemsByCategory, isItemCategory } from "@/lib/categories";
+import { getStockStatus } from "@/lib/stock";
 import type { Item } from "@/lib/types";
+
+function withCategory(item: Item): Item {
+  return {
+    ...item,
+    category: isItemCategory(item.category) ? item.category : "other",
+  };
+}
 
 export default async function ChefOrderListPage() {
   const supabase = createClient();
-  const { data } = await supabase.from("items").select("*").order("name");
-  const items = ((data || []) as Item[]).filter(
-    (i) => i.category !== "cleaning"
+  const today = kitchenToday();
+
+  const [{ data: itemData }, { data: needData }] = await Promise.all([
+    supabase.from("items").select("*").order("name"),
+    supabase.from("order_needs").select("item_id").eq("need_date", today),
+  ]);
+
+  const items = ((itemData || []) as Item[])
+    .filter((i) => i.category !== "cleaning")
+    .map(withCategory);
+
+  const flaggedItemIds = new Set(
+    (needData || []).map((row) => row.item_id as string)
   );
 
+  const alertCount = items.filter(
+    (i) => getStockStatus(i) !== "available"
+  ).length;
+  const flaggedCount = flaggedItemIds.size;
+
+  const groups = groupItemsByCategory(items)
+    .filter((g) => g.category !== "cleaning")
+    .map((group) => ({
+      ...group,
+      items: [...group.items].sort((a, b) => {
+        const order = { needs_order: 0, low: 1, available: 2 } as const;
+        return order[getStockStatus(a)] - order[getStockStatus(b)];
+      }),
+    }));
+
   return (
-    <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
+    <main className="mx-auto min-h-full max-w-2xl px-4 py-8 sm:px-6">
       <DashboardBackLink href="/chef" />
 
       <DashboardHeader
         eyebrow="Orders"
         title="Kitchen Order List"
-        subtitle={`${items.length} items on the order sheet.`}
+        subtitle={
+          alertCount > 0 || flaggedCount > 0
+            ? `${alertCount} low or out · ${flaggedCount} flagged for head chef`
+            : "Update quantities or flag items the kitchen needs to order."
+        }
       />
 
-      <p className="mb-6">
-        <Link
-          href="/chef/stock"
-          className="inline-flex rounded-lg border border-neutral-900 bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
-        >
-          Update stock levels
-        </Link>
-      </p>
-
-      <OrderSheetList items={items} />
+      {groups.length > 0 ? (
+        <CategoryMenu
+          groups={groups}
+          flaggedItemIds={flaggedItemIds}
+          showOrderNeedToggle
+        />
+      ) : (
+        <p className="rounded-xl border border-dashed border-neutral-300 bg-white p-5 text-center text-neutral-500">
+          No items on the order list yet.
+        </p>
+      )}
     </main>
   );
 }

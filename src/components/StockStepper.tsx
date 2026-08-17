@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import ItemIcon from "@/components/ItemIcon";
+import { toggleOrderNeed } from "@/lib/actions/order-needs";
 import { removeItem, setItemQuantity } from "@/lib/actions/items";
 import {
   getStockStatus,
@@ -14,8 +15,17 @@ import {
 } from "@/lib/stock";
 import type { Item } from "@/lib/types";
 
-export default function StockStepper({ item }: { item: Item }) {
+export default function StockStepper({
+  item,
+  flaggedForOrder = false,
+  showOrderNeedToggle = false,
+}: {
+  item: Item;
+  flaggedForOrder?: boolean;
+  showOrderNeedToggle?: boolean;
+}) {
   const [quantity, setQuantity] = useState(item.quantity);
+  const [flagged, setFlagged] = useState(flaggedForOrder);
   const [isPending, startTransition] = useTransition();
   const step = STOCK_STEP[item.unit] ?? 1;
   const status = getStockStatus({
@@ -44,6 +54,17 @@ export default function StockStepper({ item }: { item: Item }) {
         await removeItem(item.id);
       } catch (e) {
         window.alert(e instanceof Error ? e.message : "Failed to delete item.");
+      }
+    });
+  }
+
+  function handleToggleFlag(checked: boolean) {
+    setFlagged(checked);
+    startTransition(async () => {
+      const result = await toggleOrderNeed(item.id, checked);
+      if (result.error) {
+        setFlagged(!checked);
+        window.alert(result.error);
       }
     });
   }
@@ -139,6 +160,21 @@ export default function StockStepper({ item }: { item: Item }) {
           </button>
         </div>
       </div>
+
+      {showOrderNeedToggle && (
+        <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5">
+          <input
+            type="checkbox"
+            checked={flagged}
+            disabled={isPending}
+            onChange={(e) => handleToggleFlag(e.target.checked)}
+            className="h-5 w-5 shrink-0 accent-neutral-900"
+          />
+          <span className="text-sm font-medium text-neutral-800">
+            Flag for head chef — need to order
+          </span>
+        </label>
+      )}
     </div>
   );
 }

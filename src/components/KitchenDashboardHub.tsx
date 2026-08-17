@@ -21,7 +21,7 @@ export default async function KitchenDashboardHub({
 
   const today = kitchenToday();
 
-  const [{ count: pendingKitchenCount }, { count: pendingPrepCount }] =
+  const [{ count: pendingKitchenCount }, { count: pendingPrepCount }, { data: needData }] =
     await Promise.all([
       supabase
         .from("kitchen_status_tasks")
@@ -33,6 +33,7 @@ export default async function KitchenDashboardHub({
         .select("*", { count: "exact", head: true })
         .eq("prep_date", today)
         .eq("done", false),
+      supabase.from("order_needs").select("item_id").eq("need_date", today),
     ]);
 
   const { data: itemData } = await supabase.from("items").select("*").order("name");
@@ -40,9 +41,17 @@ export default async function KitchenDashboardHub({
   const items = (itemData || []) as Item[];
   const pendingKitchen = pendingKitchenCount ?? 0;
   const pendingPreps = pendingPrepCount ?? 0;
-  const orderNeededCount = items.filter(
-    (i) => i.category !== "cleaning" && getStockStatus(i) !== "available"
-  ).length;
+  const flaggedItemIds = new Set(
+    (needData || []).map((row) => row.item_id as string)
+  );
+  const headChefOrderCount = new Set([
+    ...items
+      .filter(
+        (i) => i.category !== "cleaning" && getStockStatus(i) !== "available"
+      )
+      .map((i) => i.id),
+    ...flaggedItemIds,
+  ]).size;
   const chefOrderListCount = items.filter(
     (i) => i.category !== "cleaning"
   ).length;
@@ -90,15 +99,15 @@ export default async function KitchenDashboardHub({
           subtitle={
             basePath === "/chef"
               ? "Full kitchen order list and stock levels"
-              : "Items chefs flagged as out or running low"
+              : "Stock updates and chef flags from the order list"
           }
-          count={basePath === "/chef" ? chefOrderListCount : orderNeededCount}
+          count={basePath === "/chef" ? chefOrderListCount : headChefOrderCount}
           countLabel={
             basePath === "/chef"
               ? chefOrderListCount === 1
                 ? "item on list"
                 : "items on list"
-              : orderNeededCount === 1
+              : headChefOrderCount === 1
                 ? "item to order"
                 : "items to order"
           }

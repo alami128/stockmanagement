@@ -3,21 +3,56 @@ import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
 import DashboardBackLink from "@/components/DashboardBackLink";
 import HeadChefOrdersView from "@/components/HeadChefOrdersView";
+import { kitchenToday } from "@/lib/dates";
 import { getStockStatus } from "@/lib/stock";
-import type { Item } from "@/lib/types";
+import type { Item, ItemWithUpdater } from "@/lib/types";
+
+type FlaggedNeed = {
+  item: ItemWithUpdater;
+  flaggedBy: string;
+  flaggedAt: string;
+};
 
 export default async function HeadChefOrdersPage() {
   const supabase = createClient();
-  const { data } = await supabase.from("items").select("*").order("name");
-  const items = ((data || []) as Item[]).filter(
+  const today = kitchenToday();
+
+  const [{ data: itemData }, { data: needData }] = await Promise.all([
+    supabase
+      .from("items")
+      .select("*, users:updated_by(name)")
+      .order("name"),
+    supabase
+      .from("order_needs")
+      .select("*, items(*, users:updated_by(name)), users:flagged_by(name)")
+      .eq("need_date", today)
+      .order("created_at"),
+  ]);
+
+  const items = ((itemData || []) as ItemWithUpdater[]).filter(
     (i) => i.category !== "cleaning"
   );
+
+  const flaggedNeeds: FlaggedNeed[] = (needData || [])
+    .map((row) => {
+      const item = row.items as ItemWithUpdater | null;
+      if (!item || item.category === "cleaning") return null;
+      return {
+        item,
+        flaggedBy: row.users?.name || "Chef",
+        flaggedAt: row.created_at as string,
+      };
+    })
+    .filter((row): row is FlaggedNeed => row !== null);
 
   const outOfStock = items.filter(
     (i) => getStockStatus(i) === "needs_order"
   ).length;
   const runningLow = items.filter((i) => getStockStatus(i) === "low").length;
-  const alertCount = outOfStock + runningLow;
+  const flaggedOnlyCount = flaggedNeeds.filter(
+    (need) => getStockStatus(need.item) === "available"
+  ).length;
+  const alertCount = outOfStock + runningLow + flaggedOnlyCount;
 
   return (
     <main className="mx-auto min-h-full max-w-3xl px-4 py-8 sm:px-6">
@@ -28,7 +63,7 @@ export default async function HeadChefOrdersPage() {
         title="Order overview"
         subtitle={
           alertCount > 0
-            ? `${outOfStock} out of stock · ${runningLow} running low`
+            ? `${outOfStock} out of stock · ${runningLow} running low${flaggedOnlyCount > 0 ? ` · ${flaggedOnlyCount} chef flagged` : ""}`
             : "All tracked stock is above reorder levels"
         }
       />
@@ -43,7 +78,7 @@ export default async function HeadChefOrdersPage() {
         </Link>
       </div>
 
-      <HeadChefOrdersView items={items} />
+      <HeadChefOrdersView items={items} flaggedNeeds={flaggedNeeds} />
     </main>
   );
 }

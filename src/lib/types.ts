@@ -104,6 +104,18 @@ export interface KitchenStatusTask {
   created_at: string;
 }
 
+export interface OrderNeed {
+  id: string;
+  item_id: string;
+  need_date: string;
+  flagged_by: string;
+  created_at: string;
+}
+
+export type ItemWithUpdater = Item & {
+  users?: { name: string } | null;
+};
+
 // Minimal Supabase Database type. Hand-written to match supabase/schema.sql.
 // If you use the Supabase CLI, you can replace this with a generated
 // type via `supabase gen types typescript`.
@@ -162,6 +174,15 @@ export interface Database {
           created_by: string;
         };
         Update: Partial<KitchenStatusTask>;
+      };
+      order_needs: {
+        Row: OrderNeed;
+        Insert: Partial<OrderNeed> & {
+          item_id: string;
+          need_date: string;
+          flagged_by: string;
+        };
+        Update: Partial<OrderNeed>;
       };
     };
   };

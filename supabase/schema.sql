@@ -109,6 +109,20 @@ create unique index if not exists kitchen_status_tasks_equipment_date_type_idx
 create index if not exists kitchen_status_tasks_date_idx
   on public.kitchen_status_tasks (task_date desc);
 
+create table if not exists public.order_needs (
+  id uuid primary key default gen_random_uuid(),
+  item_id uuid not null references public.items(id) on delete cascade,
+  need_date date not null default current_date,
+  flagged_by uuid not null references public.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists order_needs_item_date_idx
+  on public.order_needs (item_id, need_date);
+
+create index if not exists order_needs_date_idx
+  on public.order_needs (need_date desc);
+
 -- ============================================================
 -- NEW USER TRIGGER
 -- Automatically creates a public.users row whenever someone is
@@ -166,6 +180,7 @@ alter table public.prep_items enable row level security;
 alter table public.prep_selections enable row level security;
 alter table public.kitchen_equipment enable row level security;
 alter table public.kitchen_status_tasks enable row level security;
+alter table public.order_needs enable row level security;
 
 -- users: everyone can read their own row; admins can read everyone
 drop policy if exists "users_select" on public.users;
@@ -270,4 +285,16 @@ create policy "kitchen_status_tasks_update" on public.kitchen_status_tasks
 
 drop policy if exists "kitchen_status_tasks_delete" on public.kitchen_status_tasks;
 create policy "kitchen_status_tasks_delete" on public.kitchen_status_tasks
+  for delete using (public.current_role() in ('chef', 'admin'));
+
+drop policy if exists "order_needs_select" on public.order_needs;
+create policy "order_needs_select" on public.order_needs
+  for select using (public.current_role() in ('chef', 'senior_chef', 'admin'));
+
+drop policy if exists "order_needs_insert" on public.order_needs;
+create policy "order_needs_insert" on public.order_needs
+  for insert with check (public.current_role() in ('chef', 'admin'));
+
+drop policy if exists "order_needs_delete" on public.order_needs;
+create policy "order_needs_delete" on public.order_needs
   for delete using (public.current_role() in ('chef', 'admin'));
