@@ -40,6 +40,11 @@ export default async function KitchenDashboardHub({
     (i) => getStockStatus(i) !== "available"
   ).length;
   const prepsMarked = prepCount ?? 0;
+  const orderNeededCount = items.filter(
+    (i) => i.category !== "cleaning" && getStockStatus(i) !== "available"
+  ).length;
+  const chefPrepCount =
+    basePath === "/chef" ? orderNeededCount + prepsMarked : prepsMarked;
   const openOrders = orders?.length ?? 0;
 
   return (
@@ -68,19 +73,43 @@ export default async function KitchenDashboardHub({
           title="Preps Needed"
           subtitle={
             basePath === "/chef"
-              ? "Mark menu items to prepare for service"
+              ? "Stock to reorder and menu preps for service"
               : "See what chefs marked for prep today"
           }
-          count={prepsMarked}
-          countLabel={prepsMarked === 1 ? "prep marked" : "preps marked"}
+          count={chefPrepCount}
+          countLabel={
+            basePath === "/chef"
+              ? chefPrepCount === 1
+                ? "item to action"
+                : "items to action"
+              : prepsMarked === 1
+                ? "prep marked"
+                : "preps marked"
+          }
           accent="border-yellow-500 hover:bg-yellow-50"
         />
         <KitchenNavCard
           href={`${basePath}/orders`}
           title="Orders"
-          subtitle="Supplier orders and deliveries"
-          count={openOrders}
-          countLabel={openOrders === 1 ? "open order" : "open orders"}
+          subtitle={
+            basePath === "/chef"
+              ? "Full kitchen order list and stock levels"
+              : "Supplier orders and deliveries"
+          }
+          count={
+            basePath === "/chef"
+              ? items.filter((i) => i.category !== "cleaning").length
+              : openOrders
+          }
+          countLabel={
+            basePath === "/chef"
+              ? items.filter((i) => i.category !== "cleaning").length === 1
+                ? "item on list"
+                : "items on list"
+              : openOrders === 1
+                ? "open order"
+                : "open orders"
+          }
           accent="border-green-500 hover:bg-green-50"
         />
       </div>

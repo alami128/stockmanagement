@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { login, type LoginState } from "@/lib/actions/auth";
+import { login, quickLogin, type LoginState } from "@/lib/actions/auth";
 
 const initialState: LoginState = { error: null };
 
@@ -14,6 +14,7 @@ interface Persona {
   subtitle: string;
   email: string;
   accent: string;
+  quickLogin?: boolean;
 }
 
 const PERSONAS: Persona[] = [
@@ -23,6 +24,7 @@ const PERSONAS: Persona[] = [
     subtitle: "Stock overview & orders",
     email: "seniorchef@example.com",
     accent: "border-green-500 hover:bg-green-50",
+    quickLogin: true,
   },
   {
     id: "chef",
@@ -30,6 +32,7 @@ const PERSONAS: Persona[] = [
     subtitle: "Update kitchen stock",
     email: "chef@example.com",
     accent: "border-blue-500 hover:bg-blue-50",
+    quickLogin: true,
   },
   {
     id: "kps",
@@ -63,6 +66,20 @@ function SubmitButton() {
 export default function LoginPage() {
   const [persona, setPersona] = useState<Persona | null>(null);
   const [state, formAction] = useFormState(login, initialState);
+  const [quickError, setQuickError] = useState<string | null>(null);
+  const [isQuickPending, startQuickTransition] = useTransition();
+
+  function handlePersonaClick(p: Persona) {
+    setQuickError(null);
+    if (p.quickLogin) {
+      startQuickTransition(async () => {
+        const result = await quickLogin(p.id as "chef" | "head_chef");
+        if (result.error) setQuickError(result.error);
+      });
+      return;
+    }
+    setPersona(p);
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
@@ -80,8 +97,9 @@ export default function LoginPage() {
               <button
                 key={p.id}
                 type="button"
-                onClick={() => setPersona(p)}
-                className={`rounded-2xl border-2 bg-white px-5 py-4 text-left transition active:scale-[0.99] ${p.accent}`}
+                onClick={() => handlePersonaClick(p)}
+                disabled={isQuickPending}
+                className={`rounded-2xl border-2 bg-white px-5 py-4 text-left transition active:scale-[0.99] disabled:opacity-60 ${p.accent}`}
               >
                 <span className="block text-lg font-semibold text-neutral-900">
                   {p.label}
@@ -91,6 +109,11 @@ export default function LoginPage() {
                 </span>
               </button>
             ))}
+            {(quickError || (isQuickPending && !quickError)) && (
+              <p className="rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm text-neutral-700">
+                {quickError || "Signing in..."}
+              </p>
+            )}
           </div>
         ) : (
           <div className="mt-8">

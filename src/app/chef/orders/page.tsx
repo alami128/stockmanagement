@@ -1,5 +1,5 @@
-import OrdersPageContent from "@/components/OrdersPageContent";
+import ChefOrderListPage from "@/components/ChefOrderListPage";
 
 export default function Page() {
-  return <OrdersPageContent basePath="/chef" />;
+  return <ChefOrderListPage />;
 }

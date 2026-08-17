@@ -55,6 +55,8 @@ const DEMO_USERS = [
 ];
 
 const DEMO_PASSWORD = "kitchen123";
+const DEFAULT_STOCK = 10;
+const DEFAULT_LOW_STOCK = 2;
 
 type SeedItem = {
   name: string;
@@ -124,10 +126,10 @@ function parseCsvItems(csvPath: string): SeedItem[] {
 
     items.push({
       name,
-      quantity: 5,
+      quantity: DEFAULT_STOCK,
       unit: guessUnit(name, category),
       category,
-      low_stock_threshold: 2,
+      low_stock_threshold: DEFAULT_LOW_STOCK,
     });
   }
 
@@ -138,66 +140,66 @@ function parseCsvItems(csvPath: string): SeedItem[] {
 const EXTRA_ITEMS: SeedItem[] = [
   {
     name: "Parsley",
-    quantity: 8,
+    quantity: DEFAULT_STOCK,
     unit: "pcs",
     category: "vegetables",
-    low_stock_threshold: 4,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
   {
     name: "Beetroot",
-    quantity: 6,
+    quantity: DEFAULT_STOCK,
     unit: "kg",
     category: "vegetables",
-    low_stock_threshold: 3,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
   {
     name: "Dill",
-    quantity: 5,
+    quantity: DEFAULT_STOCK,
     unit: "pcs",
     category: "vegetables",
-    low_stock_threshold: 3,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
   {
     name: "Gluten free bread",
-    quantity: 6,
+    quantity: DEFAULT_STOCK,
     unit: "pcs",
     category: "bread_bakery",
-    low_stock_threshold: 4,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
   {
     name: "Vegan cheese",
-    quantity: 4,
+    quantity: DEFAULT_STOCK,
     unit: "pcs",
     category: "dairy_eggs",
-    low_stock_threshold: 2,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
   {
     name: "Gochujang paste",
-    quantity: 2,
+    quantity: DEFAULT_STOCK,
     unit: "bottle",
     category: "sauces",
-    low_stock_threshold: 1,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
   {
     name: "Italian sausages",
-    quantity: 4,
+    quantity: DEFAULT_STOCK,
     unit: "kg",
     category: "meat",
-    low_stock_threshold: 3,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
   {
     name: "Hand soap (North Shore)",
-    quantity: 2,
+    quantity: DEFAULT_STOCK,
     unit: "bottle",
     category: "cleaning",
-    low_stock_threshold: 2,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
   {
     name: "Yellow sponges",
-    quantity: 8,
+    quantity: DEFAULT_STOCK,
     unit: "pcs",
     category: "cleaning",
-    low_stock_threshold: 4,
+    low_stock_threshold: DEFAULT_LOW_STOCK,
   },
 ];
 
@@ -273,19 +275,37 @@ async function seedItems(items: SeedItem[]) {
       .maybeSingle();
 
     if (existing) {
+      const patch: { category?: string; quantity: number } = {
+        quantity: DEFAULT_STOCK,
+      };
       if (existing.category !== item.category) {
-        const { error } = await supabase
-          .from("items")
-          .update({ category: item.category })
-          .eq("id", existing.id);
-        if (error) {
-          // DB may not allow the new category yet — leave as-is.
-        } else {
-          updated += 1;
-          console.log(`Updated category: ${item.name} → ${item.category}`);
+        patch.category = item.category;
+      }
+
+      const { error } = await supabase
+        .from("items")
+        .update(patch)
+        .eq("id", existing.id);
+
+      if (error) {
+        if (patch.category) {
+          // Category update may fail on older DBs — still try quantity only.
+          const { error: qtyError } = await supabase
+            .from("items")
+            .update({ quantity: DEFAULT_STOCK })
+            .eq("id", existing.id);
+          if (!qtyError) {
+            updated += 1;
+            console.log(`Reset stock: ${item.name} → ${DEFAULT_STOCK}`);
+          }
         }
       } else {
-        skipped += 1;
+        updated += 1;
+        console.log(
+          patch.category
+            ? `Updated ${item.name}: category + stock ${DEFAULT_STOCK}`
+            : `Reset stock: ${item.name} → ${DEFAULT_STOCK}`
+        );
       }
       continue;
     }

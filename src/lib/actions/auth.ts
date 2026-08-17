@@ -18,6 +18,25 @@ export async function login(
     return { error: "Enter your email and password." };
   }
 
+  return signInWithCredentials(email, password);
+}
+
+const DEMO_PASSWORD = "kitchen123";
+
+const QUICK_LOGIN_EMAIL: Record<"chef" | "head_chef", string> = {
+  chef: "chef@example.com",
+  head_chef: "seniorchef@example.com",
+};
+
+export async function quickLogin(persona: "chef" | "head_chef"): Promise<LoginState> {
+  const email = QUICK_LOGIN_EMAIL[persona];
+  return signInWithCredentials(email, DEMO_PASSWORD);
+}
+
+async function signInWithCredentials(
+  email: string,
+  password: string
+): Promise<LoginState> {
   const supabase = createClient();
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -25,10 +44,9 @@ export async function login(
   });
 
   if (error) {
-    return { error: "Incorrect email or password." };
+    return { error: "Could not sign in. Check the account exists in Supabase." };
   }
 
-  // Look up role to send the user straight to the right dashboard.
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -43,8 +61,8 @@ export async function login(
     profile?.role === "admin"
       ? "/admin"
       : profile?.role === "senior_chef"
-      ? "/senior-chef"
-      : "/chef";
+        ? "/senior-chef"
+        : "/chef";
 
   redirect(home);
 }
