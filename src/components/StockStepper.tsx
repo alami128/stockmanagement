@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import ItemIcon from "@/components/ItemIcon";
+import SwipeQuantityControl from "@/components/SwipeQuantityControl";
 import { toggleOrderNeed } from "@/lib/actions/order-needs";
 import { removeItem, setItemQuantity } from "@/lib/actions/items";
 import {
@@ -107,59 +108,70 @@ export default function StockStepper({
         />
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <button
-          onClick={() => commit(quantity - step)}
-          disabled={isPending || quantity <= 0}
-          aria-label={`Decrease ${item.name}`}
-          className="btn h-14 w-14 shrink-0 bg-neutral-100 p-0 text-2xl font-bold text-neutral-700 hover:bg-neutral-200 disabled:opacity-40"
-        >
-          −
-        </button>
-
-        <div className="min-w-0 flex-1 text-center">
-          <p className="text-2xl font-bold tabular-nums text-neutral-900">
-            {formatQuantity(quantity, item.unit)}
-          </p>
-          <p className="text-xs text-neutral-400">
-            reorder below {formatQuantity(item.low_stock_threshold, item.unit)}
-          </p>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
+      {showOrderNeedToggle ? (
+        <SwipeQuantityControl
+          quantityLabel={formatQuantity(quantity, item.unit)}
+          sublabel={`reorder below ${formatQuantity(item.low_stock_threshold, item.unit)}`}
+          disabled={isPending}
+          canDecrease={quantity > 0}
+          onIncrease={() => commit(quantity + step)}
+          onDecrease={() => commit(quantity - step)}
+        />
+      ) : (
+        <div className="mt-4 flex items-center justify-between gap-3">
           <button
-            onClick={() => commit(quantity + step)}
-            disabled={isPending}
-            aria-label={`Increase ${item.name}`}
-            className="btn h-14 w-14 shrink-0 bg-neutral-900 p-0 text-2xl font-bold text-white hover:bg-neutral-800 disabled:opacity-40"
+            onClick={() => commit(quantity - step)}
+            disabled={isPending || quantity <= 0}
+            aria-label={`Decrease ${item.name}`}
+            className="btn h-14 w-14 shrink-0 bg-neutral-100 p-0 text-2xl font-bold text-neutral-700 hover:bg-neutral-200 disabled:opacity-40"
           >
-            +
+            −
           </button>
-          <button
-            onClick={handleDelete}
-            disabled={isPending}
-            aria-label={`Delete ${item.name}`}
-            title="Delete item"
-            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-red-500/40 bg-white text-red-600/45 transition-opacity hover:border-red-500/70 hover:bg-red-50 hover:text-red-600/70 active:opacity-80 disabled:opacity-30"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
+
+          <div className="min-w-0 flex-1 text-center">
+            <p className="text-2xl font-bold tabular-nums text-neutral-900">
+              {formatQuantity(quantity, item.unit)}
+            </p>
+            <p className="text-xs text-neutral-400">
+              reorder below {formatQuantity(item.low_stock_threshold, item.unit)}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={() => commit(quantity + step)}
+              disabled={isPending}
+              aria-label={`Increase ${item.name}`}
+              className="btn h-14 w-14 shrink-0 bg-neutral-900 p-0 text-2xl font-bold text-white hover:bg-neutral-800 disabled:opacity-40"
             >
-              <path d="M3 6h18" />
-              <path d="M8 6V4h8v2" />
-              <path d="M19 6l-1 14H6L5 6" />
-              <path d="M10 11v6M14 11v6" />
-            </svg>
-          </button>
+              +
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isPending}
+              aria-label={`Delete ${item.name}`}
+              title="Delete item"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-red-500/40 bg-white text-red-600/45 transition-opacity hover:border-red-500/70 hover:bg-red-50 hover:text-red-600/70 active:opacity-80 disabled:opacity-30"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="M19 6l-1 14H6L5 6" />
+                <path d="M10 11v6M14 11v6" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {showOrderNeedToggle && (
         <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5">
