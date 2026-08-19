@@ -2,8 +2,9 @@
 
 import { useRef, useState } from "react";
 
-const SWIPE_THRESHOLD = 44;
-const MAX_DRAG = 80;
+const CENTER = 50;
+const TRIGGER_LEFT = 38;
+const TRIGGER_RIGHT = 62;
 
 export default function SwipeQuantityControl({
   quantityLabel,
@@ -20,98 +21,84 @@ export default function SwipeQuantityControl({
   onIncrease: () => void;
   onDecrease: () => void;
 }) {
-  const [dragX, setDragX] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [thumbPct, setThumbPct] = useState(CENTER);
   const [dragging, setDragging] = useState(false);
-  const startX = useRef(0);
-  const active = useRef(false);
 
-  function resetDrag() {
-    active.current = false;
-    setDragging(false);
-    setDragX(0);
+  function pctFromClientX(clientX: number) {
+    const track = trackRef.current;
+    if (!track) return CENTER;
+    const rect = track.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const pct = (x / rect.width) * 100;
+    return Math.max(6, Math.min(94, pct));
   }
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
     if (disabled) return;
-    active.current = true;
-    startX.current = e.clientX;
     setDragging(true);
+    setThumbPct(pctFromClientX(e.clientX));
     e.currentTarget.setPointerCapture(e.pointerId);
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!active.current) return;
-    const delta = e.clientX - startX.current;
-    setDragX(Math.max(-MAX_DRAG, Math.min(MAX_DRAG, delta)));
+    if (!dragging || disabled) return;
+    setThumbPct(pctFromClientX(e.clientX));
   }
 
-  function onPointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    if (!active.current) return;
-    const delta = e.clientX - startX.current;
-    resetDrag();
-    if (delta >= SWIPE_THRESHOLD) onIncrease();
-    else if (delta <= -SWIPE_THRESHOLD && canDecrease) onDecrease();
-  }
+  function onPointerUp() {
+    if (!dragging) return;
+    const pct = thumbPct;
+    setDragging(false);
+    setThumbPct(CENTER);
 
-  const dragTone =
-    dragX > 20
-      ? "bg-green-100 ring-green-300"
-      : dragX < -20
-        ? "bg-red-50 ring-red-200"
-        : "bg-neutral-100 ring-neutral-200";
+    if (pct >= TRIGGER_RIGHT) onIncrease();
+    else if (pct <= TRIGGER_LEFT && canDecrease) onDecrease();
+  }
 
   return (
     <div className="mt-4">
+      <div className="mb-5 text-center">
+        <p className="text-2xl font-bold tabular-nums text-neutral-900">
+          {quantityLabel}
+        </p>
+        <p className="mt-0.5 text-xs text-neutral-500">{sublabel}</p>
+      </div>
+
       <div
+        ref={trackRef}
         role="slider"
-        aria-label="Swipe left to decrease, swipe right to increase"
+        aria-label="Slide left to decrease, slide right to increase"
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={50}
+        aria-valuenow={Math.round(thumbPct)}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={resetDrag}
-        className={`relative flex h-[4.5rem] touch-none select-none items-center overflow-hidden rounded-2xl ring-1 transition-colors ${
+        onPointerCancel={onPointerUp}
+        className={`relative h-12 touch-none select-none ${
           disabled ? "cursor-not-allowed opacity-50" : "cursor-grab active:cursor-grabbing"
-        } ${dragging ? dragTone : "bg-neutral-100 ring-neutral-200"}`}
+        }`}
       >
-        <div className="pointer-events-none absolute inset-y-0 left-0 flex w-1/3 items-center justify-start pl-4">
-          <span
-            className={`text-2xl font-bold transition-opacity ${
-              dragX < -10 ? "text-red-600 opacity-100" : "text-neutral-300 opacity-70"
-            }`}
-          >
-            −
-          </span>
-        </div>
+        <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-neutral-900" />
 
         <div
-          className="pointer-events-none mx-auto flex min-w-0 flex-1 flex-col items-center px-16 text-center"
+          className={`absolute top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-900 shadow-md ring-4 ring-white ${
+            dragging ? "scale-110" : "scale-100"
+          }`}
           style={{
-            transform: `translateX(${dragX}px)`,
-            transition: dragging ? "none" : "transform 0.22s ease-out",
+            left: `${thumbPct}%`,
+            transition: dragging
+              ? "none"
+              : "left 0.25s ease-out, transform 0.15s ease-out",
           }}
-        >
-          <p className="text-2xl font-bold tabular-nums text-neutral-900">
-            {quantityLabel}
-          </p>
-          <p className="text-xs text-neutral-500">{sublabel}</p>
-        </div>
-
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex w-1/3 items-center justify-end pr-4">
-          <span
-            className={`text-2xl font-bold transition-opacity ${
-              dragX > 10 ? "text-green-700 opacity-100" : "text-neutral-300 opacity-70"
-            }`}
-          >
-            +
-          </span>
-        </div>
+        />
       </div>
-      <p className="mt-2 text-center text-xs text-neutral-400">
-        Swipe left for less · swipe right for more
-      </p>
+
+      <div className="mt-3 flex justify-between px-1 text-xs font-medium text-neutral-400">
+        <span>− less</span>
+        <span>more +</span>
+      </div>
     </div>
   );
 }
