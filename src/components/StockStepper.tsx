@@ -2,7 +2,9 @@
 
 import { useState, useTransition } from "react";
 import ItemIcon from "@/components/ItemIcon";
-import SwipeQuantityControl from "@/components/SwipeQuantityControl";
+import SwipeQuantityControl, {
+  sliderMaxQuantity,
+} from "@/components/SwipeQuantityControl";
 import { toggleOrderNeed } from "@/lib/actions/order-needs";
 import { removeItem, setItemQuantity } from "@/lib/actions/items";
 import {
@@ -33,6 +35,11 @@ export default function StockStepper({
     quantity,
     low_stock_threshold: item.low_stock_threshold,
   });
+
+  function previewQuantity(next: number) {
+    const safe = Math.max(0, Math.round(next / step) * step);
+    setQuantity(safe);
+  }
 
   function commit(next: number) {
     const safe = Math.max(0, Math.round(next / step) * step);
@@ -110,12 +117,18 @@ export default function StockStepper({
 
       {showOrderNeedToggle ? (
         <SwipeQuantityControl
+          quantity={quantity}
+          step={step}
+          maxQuantity={sliderMaxQuantity(
+            item.quantity,
+            item.low_stock_threshold,
+            step
+          )}
           quantityLabel={formatQuantity(quantity, item.unit)}
           sublabel={`reorder below ${formatQuantity(item.low_stock_threshold, item.unit)}`}
           disabled={isPending}
-          canDecrease={quantity > 0}
-          onIncrease={() => commit(quantity + step)}
-          onDecrease={() => commit(quantity - step)}
+          onChange={previewQuantity}
+          onCommit={commit}
         />
       ) : (
         <div className="mt-4 flex items-center justify-between gap-3">
