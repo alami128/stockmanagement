@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import DashboardHeader from "@/components/DashboardHeader";
 import DashboardBackLink from "@/components/DashboardBackLink";
 import CategoryMenu from "@/components/CategoryMenu";
+import DownloadOutOfStockButton from "@/components/DownloadOutOfStockButton";
 import { kitchenToday } from "@/lib/dates";
 import { groupItemsByCategory, isItemCategory } from "@/lib/categories";
 import { getStockStatus } from "@/lib/stock";
@@ -34,6 +35,9 @@ export default async function ChefOrderListPage() {
   const alertCount = items.filter(
     (i) => getStockStatus(i) !== "available"
   ).length;
+  const outOfStockItems = items
+    .filter((i) => getStockStatus(i) === "needs_order")
+    .sort((a, b) => a.name.localeCompare(b.name));
   const flaggedCount = flaggedItemIds.size;
 
   const groups = groupItemsByCategory(items)
@@ -59,6 +63,10 @@ export default async function ChefOrderListPage() {
             : "Update quantities or flag items the kitchen needs to order."
         }
       />
+
+      <div className="mb-6">
+        <DownloadOutOfStockButton items={outOfStockItems} date={today} />
+      </div>
 
       {groups.length > 0 ? (
         <CategoryMenu
