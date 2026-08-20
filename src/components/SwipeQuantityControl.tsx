@@ -3,14 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 
 function snapQuantity(pct: number, maxQuantity: number, step: number) {
+  if (pct <= 0) return 0;
+  if (pct >= 100) return Math.max(0, Math.round(maxQuantity / step) * step);
   const raw = (pct / 100) * maxQuantity;
   return Math.max(0, Math.round(raw / step) * step);
 }
 
 function pctFromQuantity(quantity: number, maxQuantity: number) {
-  if (maxQuantity <= 0) return 0;
-  const pct = (quantity / maxQuantity) * 100;
-  return Math.max(4, Math.min(96, pct));
+  if (maxQuantity <= 0 || quantity <= 0) return 0;
+  return Math.max(0, Math.min(100, (quantity / maxQuantity) * 100));
 }
 
 export function sliderMaxQuantity(
@@ -65,9 +66,12 @@ export default function SwipeQuantityControl({
     const track = trackRef.current;
     if (!track) return thumbPctRef.current;
     const rect = track.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const pct = (x / rect.width) * 100;
-    return Math.max(4, Math.min(96, pct));
+    // Use the inset track (thumb radius) so 0 and max are reachable
+    const pad = 16;
+    const usable = Math.max(1, rect.width - pad * 2);
+    const x = clientX - rect.left - pad;
+    const pct = (x / usable) * 100;
+    return Math.max(0, Math.min(100, pct));
   }
 
   function applyAtClientX(clientX: number) {
@@ -102,6 +106,10 @@ export default function SwipeQuantityControl({
     setThumbPct(pct);
   }
 
+  // Keep thumb fully visible at both ends: pad 16px (half of 32px thumb)
+  const thumbLeft = `calc(16px + (100% - 32px) * ${thumbPct / 100})`;
+  const fillWidth = `calc(16px + (100% - 32px) * ${thumbPct / 100})`;
+
   return (
     <div className="mt-4">
       <div className="mb-5 text-center">
@@ -130,10 +138,10 @@ export default function SwipeQuantityControl({
           disabled ? "cursor-not-allowed opacity-50" : "cursor-grab active:cursor-grabbing"
         }`}
       >
-        <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-neutral-300" />
+        <div className="absolute inset-x-4 top-1/2 h-0.5 -translate-y-1/2 bg-neutral-300" />
         <div
-          className="absolute top-1/2 h-0.5 -translate-y-1/2 bg-neutral-900 transition-[width] duration-75 ease-out"
-          style={{ width: `${thumbPct}%` }}
+          className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 bg-neutral-900 transition-[width] duration-75 ease-out"
+          style={{ width: fillWidth }}
         />
 
         <div
@@ -141,7 +149,7 @@ export default function SwipeQuantityControl({
             dragging ? "scale-110" : "scale-100"
           }`}
           style={{
-            left: `${thumbPct}%`,
+            left: thumbLeft,
             transition: dragging
               ? "transform 0.1s ease-out"
               : "left 0.2s ease-out, transform 0.15s ease-out",
@@ -150,7 +158,7 @@ export default function SwipeQuantityControl({
       </div>
 
       <div className="mt-3 flex justify-between px-1 text-xs font-medium text-neutral-400">
-        <span>0</span>
+        <span>0 · out of stock</span>
         <span>{Math.round(maxQuantity)} max</span>
       </div>
     </div>
