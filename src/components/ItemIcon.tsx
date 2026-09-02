@@ -449,8 +449,17 @@ export default function ItemIcon({
   const colorful = COLORFUL_KINDS.has(kind);
   const box =
     size === "lg" ? "h-14 w-14" : size === "sm" ? "h-10 w-10" : "h-12 w-12";
-  const glyph =
-    size === "lg" ? "h-8 w-8" : size === "sm" ? "h-5 w-5" : "h-6 w-6";
+  const glyph = colorful
+    ? size === "lg"
+      ? "h-11 w-11"
+      : size === "sm"
+        ? "h-8 w-8"
+        : "h-10 w-10"
+    : size === "lg"
+      ? "h-8 w-8"
+      : size === "sm"
+        ? "h-5 w-5"
+        : "h-6 w-6";
 
   return (
     <div
