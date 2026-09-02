@@ -15,7 +15,8 @@ export default function ResetStockToGreenButton({
   function handleReset() {
     const confirmed = window.confirm(
       "Reset all kitchen stock to green?\n\n" +
-        "This will set every item back to available and clear today’s chef order flags.\n\n" +
+        "Each item will be set to one above its running-low level (still available).\n" +
+        "Today’s chef order flags will also be cleared.\n\n" +
         "This cannot be undone."
     );
     if (!confirmed) return;

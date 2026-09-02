@@ -83,7 +83,8 @@ export async function resetAllStockToAvailable(): Promise<ActionResult> {
   const now = new Date().toISOString();
   for (const item of kitchenItems) {
     const threshold = Number(item.low_stock_threshold) || 0;
-    const quantity = Math.max(10, threshold + 1);
+    // Just above running-low so one − tap marks it low
+    const quantity = threshold + 1;
     const { error } = await supabase
       .from("items")
       .update({
