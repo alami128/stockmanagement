@@ -2,10 +2,6 @@
 
 import { useState, useTransition } from "react";
 import ItemIcon from "@/components/ItemIcon";
-import SwipeQuantityControl, {
-  sliderMaxQuantity,
-} from "@/components/SwipeQuantityControl";
-import { toggleOrderNeed } from "@/lib/actions/order-needs";
 import { removeItem, setItemQuantity } from "@/lib/actions/items";
 import {
   getStockStatus,
@@ -18,28 +14,14 @@ import {
 } from "@/lib/stock";
 import type { Item } from "@/lib/types";
 
-export default function StockStepper({
-  item,
-  flaggedForOrder = false,
-  showOrderNeedToggle = false,
-}: {
-  item: Item;
-  flaggedForOrder?: boolean;
-  showOrderNeedToggle?: boolean;
-}) {
+export default function StockStepper({ item }: { item: Item }) {
   const [quantity, setQuantity] = useState(item.quantity);
-  const [flagged, setFlagged] = useState(flaggedForOrder);
   const [isPending, startTransition] = useTransition();
   const step = STOCK_STEP[item.unit] ?? 1;
   const status = getStockStatus({
     quantity,
     low_stock_threshold: item.low_stock_threshold,
   });
-
-  function previewQuantity(next: number) {
-    const safe = Math.max(0, Math.round(next / step) * step);
-    setQuantity(safe);
-  }
 
   function commit(next: number) {
     const safe = Math.max(0, Math.round(next / step) * step);
@@ -66,17 +48,6 @@ export default function StockStepper({
     });
   }
 
-  function handleToggleFlag(checked: boolean) {
-    setFlagged(checked);
-    startTransition(async () => {
-      const result = await toggleOrderNeed(item.id, checked);
-      if (result.error) {
-        setFlagged(!checked);
-        window.alert(result.error);
-      }
-    });
-  }
-
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
@@ -91,9 +62,7 @@ export default function StockStepper({
             <p className="truncate text-lg font-semibold text-neutral-900">
               {item.name}
             </p>
-            <p className="text-xs text-neutral-400">
-              {unitCaption(item.unit)}
-            </p>
+            <p className="text-xs text-neutral-400">{unitCaption(item.unit)}</p>
           </div>
         </div>
         <span
@@ -115,91 +84,59 @@ export default function StockStepper({
         />
       </div>
 
-      {showOrderNeedToggle ? (
-        <SwipeQuantityControl
-          quantity={quantity}
-          step={step}
-          maxQuantity={sliderMaxQuantity(
-            item.quantity,
-            item.low_stock_threshold,
-            step
-          )}
-          quantityLabel={formatQuantity(quantity, item.unit)}
-          sublabel={`reorder below ${formatQuantity(item.low_stock_threshold, item.unit)}`}
-          disabled={isPending}
-          onChange={previewQuantity}
-          onCommit={commit}
-        />
-      ) : (
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <button
-            onClick={() => commit(quantity - step)}
-            disabled={isPending || quantity <= 0}
-            aria-label={`Decrease ${item.name}`}
-            className="btn h-14 w-14 shrink-0 bg-neutral-100 p-0 text-2xl font-bold text-neutral-700 hover:bg-neutral-200 disabled:opacity-40"
-          >
-            −
-          </button>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <button
+          onClick={() => commit(quantity - step)}
+          disabled={isPending || quantity <= 0}
+          aria-label={`Decrease ${item.name}`}
+          className="btn h-14 w-14 shrink-0 bg-neutral-100 p-0 text-2xl font-bold text-neutral-700 hover:bg-neutral-200 disabled:opacity-40"
+        >
+          −
+        </button>
 
-          <div className="min-w-0 flex-1 text-center">
-            <p className="text-2xl font-bold tabular-nums text-neutral-900">
-              {formatQuantity(quantity, item.unit)}
-            </p>
-            <p className="text-xs text-neutral-400">
-              reorder below {formatQuantity(item.low_stock_threshold, item.unit)}
-            </p>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              onClick={() => commit(quantity + step)}
-              disabled={isPending}
-              aria-label={`Increase ${item.name}`}
-              className="btn h-14 w-14 shrink-0 bg-neutral-900 p-0 text-2xl font-bold text-white hover:bg-neutral-800 disabled:opacity-40"
-            >
-              +
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={isPending}
-              aria-label={`Delete ${item.name}`}
-              title="Delete item"
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-red-500/40 bg-white text-red-600/45 transition-opacity hover:border-red-500/70 hover:bg-red-50 hover:text-red-600/70 active:opacity-80 disabled:opacity-30"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <path d="M3 6h18" />
-                <path d="M8 6V4h8v2" />
-                <path d="M19 6l-1 14H6L5 6" />
-                <path d="M10 11v6M14 11v6" />
-              </svg>
-            </button>
-          </div>
+        <div className="min-w-0 flex-1 text-center">
+          <p className="text-2xl font-bold tabular-nums text-neutral-900">
+            {formatQuantity(quantity, item.unit)}
+          </p>
+          <p className="text-xs text-neutral-400">
+            reorder below {formatQuantity(item.low_stock_threshold, item.unit)}
+          </p>
         </div>
-      )}
 
-      {showOrderNeedToggle && (
-        <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5">
-          <input
-            type="checkbox"
-            checked={flagged}
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={() => commit(quantity + step)}
             disabled={isPending}
-            onChange={(e) => handleToggleFlag(e.target.checked)}
-            className="h-5 w-5 shrink-0 accent-neutral-900"
-          />
-          <span className="text-sm font-medium text-neutral-800">
-            Flag for head chef — need to order
-          </span>
-        </label>
-      )}
+            aria-label={`Increase ${item.name}`}
+            className="btn h-14 w-14 shrink-0 bg-neutral-900 p-0 text-2xl font-bold text-white hover:bg-neutral-800 disabled:opacity-40"
+          >
+            +
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={isPending}
+            aria-label={`Delete ${item.name}`}
+            title="Delete item"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-red-500/40 bg-white text-red-600/45 transition-opacity hover:border-red-500/70 hover:bg-red-50 hover:text-red-600/70 active:opacity-80 disabled:opacity-30"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M3 6h18" />
+              <path d="M8 6V4h8v2" />
+              <path d="M19 6l-1 14H6L5 6" />
+              <path d="M10 11v6M14 11v6" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

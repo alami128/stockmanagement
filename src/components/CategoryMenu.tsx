@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import MinimalOrderItemRow from "@/components/MinimalOrderItemRow";
 import StockStepper from "@/components/StockStepper";
 import { CATEGORY_LABEL } from "@/lib/categories";
 import { getStockStatus } from "@/lib/stock";
@@ -15,7 +16,6 @@ export default function CategoryMenu({
   flaggedItemIds?: Set<string>;
   showOrderNeedToggle?: boolean;
 }) {
-  // Open the first category that has something low / out, otherwise none.
   const defaultOpen =
     groups.find((g) =>
       g.items.some((item) => getStockStatus(item) !== "available")
@@ -25,6 +25,68 @@ export default function CategoryMenu({
 
   function toggle(category: ItemCategory) {
     setOpen((prev) => (prev === category ? null : category));
+  }
+
+  if (showOrderNeedToggle) {
+    return (
+      <div className="space-y-6">
+        {groups.map(({ category, items }) => {
+          const isOpen = open === category;
+          const attention = items.filter(
+            (item) => getStockStatus(item) !== "available"
+          ).length;
+
+          return (
+            <section key={category}>
+              <button
+                type="button"
+                onClick={() => toggle(category)}
+                aria-expanded={isOpen}
+                className="mb-3 flex w-full items-center justify-between gap-3 px-1 text-left"
+              >
+                <h2 className="font-display text-base font-semibold text-neutral-900">
+                  {CATEGORY_LABEL[category]}
+                </h2>
+                <span className="flex items-center gap-2 text-sm text-neutral-400">
+                  {attention > 0 && (
+                    <span className="tabular-nums text-amber-600">
+                      {attention}
+                    </span>
+                  )}
+                  <span className="tabular-nums">{items.length}</span>
+                  <svg
+                    viewBox="0 0 20 20"
+                    className={`h-4 w-4 transition-transform ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M5 7.5 10 12.5 15 7.5" />
+                  </svg>
+                </span>
+              </button>
+
+              {isOpen && (
+                <div className="space-y-2.5">
+                  {items.map((item) => (
+                    <MinimalOrderItemRow
+                      key={item.id}
+                      item={item}
+                      flaggedForOrder={flaggedItemIds?.has(item.id) ?? false}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
+    );
   }
 
   return (
@@ -78,12 +140,7 @@ export default function CategoryMenu({
             {isOpen && (
               <div className="space-y-2 border-t border-neutral-100 bg-neutral-50/60 px-3 py-3">
                 {items.map((item) => (
-                  <StockStepper
-                    key={item.id}
-                    item={item}
-                    flaggedForOrder={flaggedItemIds?.has(item.id) ?? false}
-                    showOrderNeedToggle={showOrderNeedToggle}
-                  />
+                  <StockStepper key={item.id} item={item} />
                 ))}
               </div>
             )}
