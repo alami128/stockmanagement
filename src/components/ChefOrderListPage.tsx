@@ -3,6 +3,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import DashboardBackLink from "@/components/DashboardBackLink";
 import CategoryMenu from "@/components/CategoryMenu";
 import DownloadOutOfStockButton from "@/components/DownloadOutOfStockButton";
+import ResetStockToGreenButton from "@/components/ResetStockToGreenButton";
 import { kitchenToday } from "@/lib/dates";
 import { groupItemsByCategory, isItemCategory } from "@/lib/categories";
 import { getStockStatus } from "@/lib/stock";
@@ -62,8 +63,9 @@ export default async function ChefOrderListPage() {
         }
       />
 
-      <div className="mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <DownloadOutOfStockButton items={outOfStockItems} date={today} />
+        <ResetStockToGreenButton alertCount={alertCount + flaggedCount} />
       </div>
 
       {groups.length > 0 ? (

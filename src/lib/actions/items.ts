@@ -3,6 +3,7 @@
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { revalidateKitchenDashboards } from "@/lib/revalidate-kitchen";
+import { kitchenToday } from "@/lib/dates";
 import { guessCategory, isItemCategory } from "@/lib/categories";
 import type { ItemCategory, Role, StockUnit } from "@/lib/types";
 
@@ -59,6 +60,47 @@ export async function setItemQuantity(itemId: string, quantity: number) {
   revalidateKitchenDashboards({
     skip: ["/chef/orders", "/chef/stock"],
   });
+}
+
+/** Set every kitchen stock item above its reorder level (all green / available). */
+export async function resetAllStockToAvailable(): Promise<ActionResult> {
+  const auth = await requireItemManager();
+  if (auth.error || !auth.user) {
+    return { error: auth.error || "Not signed in." };
+  }
+
+  const supabase = createClient();
+  const { data: items, error: fetchError } = await supabase
+    .from("items")
+    .select("id, low_stock_threshold, category");
+
+  if (fetchError) return { error: fetchError.message };
+
+  const kitchenItems = (items || []).filter(
+    (item) => item.category !== "cleaning"
+  );
+
+  const now = new Date().toISOString();
+  for (const item of kitchenItems) {
+    const threshold = Number(item.low_stock_threshold) || 0;
+    const quantity = Math.max(10, threshold + 1);
+    const { error } = await supabase
+      .from("items")
+      .update({
+        quantity,
+        updated_at: now,
+        updated_by: auth.user.id,
+      })
+      .eq("id", item.id);
+    if (error) return { error: error.message };
+  }
+
+  const today = kitchenToday();
+
+  await supabase.from("order_needs").delete().eq("need_date", today);
+
+  revalidateKitchenDashboards();
+  return { error: null };
 }
 
 export async function addItem(formData: FormData): Promise<ActionResult> {

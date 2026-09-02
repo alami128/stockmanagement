@@ -34,6 +34,15 @@ export default function MinimalOrderItemRow({
     })
   );
 
+  useEffect(() => {
+    setQuantity(item.quantity);
+    quantityRef.current = item.quantity;
+  }, [item.quantity, item.updated_at]);
+
+  useEffect(() => {
+    setFlagged(flaggedForOrder);
+  }, [flaggedForOrder]);
+
   const status = getStockStatus({
     quantity,
     low_stock_threshold: item.low_stock_threshold,
