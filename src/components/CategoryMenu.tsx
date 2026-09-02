@@ -75,7 +75,7 @@ export default function CategoryMenu({
                 <div className="space-y-2.5">
                   {items.map((item) => (
                     <MinimalOrderItemRow
-                      key={item.id}
+                      key={`${item.id}-${item.quantity}-${item.updated_at}`}
                       item={item}
                       flaggedForOrder={flaggedItemIds?.has(item.id) ?? false}
                     />

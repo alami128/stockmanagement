@@ -37,7 +37,7 @@ export default function MinimalOrderItemRow({
   useEffect(() => {
     setQuantity(item.quantity);
     quantityRef.current = item.quantity;
-  }, [item.quantity, item.updated_at]);
+  }, [item.id, item.quantity, item.updated_at]);
 
   useEffect(() => {
     setFlagged(flaggedForOrder);

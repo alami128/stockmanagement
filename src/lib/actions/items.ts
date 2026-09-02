@@ -62,15 +62,15 @@ export async function setItemQuantity(itemId: string, quantity: number) {
   });
 }
 
-/** Set every kitchen stock item above its reorder level (all green / available). */
+/** Set every kitchen stock item to one above its running-low level. */
 export async function resetAllStockToAvailable(): Promise<ActionResult> {
   const auth = await requireItemManager();
   if (auth.error || !auth.user) {
     return { error: auth.error || "Not signed in." };
   }
 
-  const supabase = createClient();
-  const { data: items, error: fetchError } = await supabase
+  const admin = createAdminClient();
+  const { data: items, error: fetchError } = await admin
     .from("items")
     .select("id, low_stock_threshold, category");
 
@@ -81,24 +81,24 @@ export async function resetAllStockToAvailable(): Promise<ActionResult> {
   );
 
   const now = new Date().toISOString();
-  for (const item of kitchenItems) {
+  const updates = kitchenItems.map((item) => {
     const threshold = Number(item.low_stock_threshold) || 0;
-    // Just above running-low so one − tap marks it low
-    const quantity = threshold + 1;
-    const { error } = await supabase
+    return admin
       .from("items")
       .update({
-        quantity,
+        quantity: threshold + 1,
         updated_at: now,
-        updated_by: auth.user.id,
+        updated_by: auth.user!.id,
       })
       .eq("id", item.id);
-    if (error) return { error: error.message };
-  }
+  });
+
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { error: failed.error.message };
 
   const today = kitchenToday();
-
-  await supabase.from("order_needs").delete().eq("need_date", today);
+  await admin.from("order_needs").delete().eq("need_date", today);
 
   revalidateKitchenDashboards();
   return { error: null };
