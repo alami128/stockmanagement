@@ -44,10 +44,8 @@ export default async function ChefOrderListPage() {
     .filter((g) => g.category !== "cleaning")
     .map((group) => ({
       ...group,
-      items: [...group.items].sort((a, b) => {
-        const order = { needs_order: 0, low: 1, available: 2 } as const;
-        return order[getStockStatus(a)] - order[getStockStatus(b)];
-      }),
+      // Keep A–Z order so items stay put while stock status changes
+      items: [...group.items].sort((a, b) => a.name.localeCompare(b.name)),
     }));
 
   return (

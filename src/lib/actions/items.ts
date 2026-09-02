@@ -55,7 +55,10 @@ export async function setItemQuantity(itemId: string, quantity: number) {
 
   if (error) throw new Error(error.message);
 
-  revalidateKitchenDashboards();
+  // Keep chef order/stock lists stable while tapping +/- (local UI owns the row)
+  revalidateKitchenDashboards({
+    skip: ["/chef/orders", "/chef/stock"],
+  });
 }
 
 export async function addItem(formData: FormData): Promise<ActionResult> {
